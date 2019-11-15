@@ -27,28 +27,48 @@ with h5py.File(filename, 'r') as f:
 
     # Get the data
     # Segmentated images 1x 128x 128 values from 0 to 6
-    data = list(f[a_group_key])
+    segmented_data = list(f['b_'])
     # Real images three channels instad of 0-255 values for a pixel we have normalized values between [-1;1]
-    ih_data = list(f['ih'])
-    test_picture = np.array(ih_data[0])
+    real_images = list(f['ih'])
+    # test_picture = np.array(real_images[70000])
     import copy
-    normalized = copy.deepcopy(test_picture)
+    # normalized = copy.deepcopy(test_picture)
 
-    # normalize the pixel values from [-1;1] to [0;1]
-    for channel in range(len(normalized)):
-        normalized[channel] = (normalized[channel] - normalized[channel].min()) / (normalized[channel].max()-normalized[channel].min())
+    # # normalize the pixel values from [-1;1] to [0;1]
+    # for channel in range(len(normalized)):
+    #     normalized[channel] = (normalized[channel] - normalized[channel].min()) / (normalized[channel].max()-normalized[channel].min())
     
-    test_picture_reshaped = torch.from_numpy(normalized)
-    save_image(test_picture_reshaped,'img1.png')
+    # test_picture_reshaped = torch.from_numpy(normalized)
+    # save_image(test_picture_reshaped,'img1.png')
+
+    for i in range(0,50):
+        normalized = copy.deepcopy(np.array(real_images[i]))
+        for channel in range(len(normalized)):
+            normalized[channel] = (normalized[channel] - normalized[channel].min()) / (normalized[channel].max()-normalized[channel].min())
+        test_picture_reshaped = torch.from_numpy(normalized)
+        test_picture_reshaped = test_picture_reshaped.permute(0,2,1)
+        image_name = 'images\img'+str(i)+'.png'
+        save_image(test_picture_reshaped,image_name)
+
+        segmented_image = np.array(segmented_data[i][0])
+        segmented_tensor = torch.from_numpy(segmented_image)
+        segmented_tensor = segmented_tensor.permute(1,0)
+        segmented_image_name = 'images\seg'+str(i)+'.png'
+        plt.imshow(segmented_tensor)
+        plt.savefig(segmented_image_name)
+        
+
+
+
     
     test_picture_reshaped = test_picture_reshaped.permute(1,2,0)
     print("After changing the shape")
     
-    plt.imshow(test_picture_reshaped, interpolation='nearest')
-    plt.show()
+    # plt.imshow(test_picture_reshaped, interpolation='nearest')
+    # plt.show()
     # Mean for each channel 3x 128 x 128
     ih_mean_data = list(f['ih_mean'])
-    first_img = data[70000][0]
-    plt.imshow(first_img)
-    plt.show()
+    # first_img = segmented_data[70000][0]
+    # plt.imshow(first_img)
+    # plt.show()
     print("Hi")
