@@ -29,6 +29,8 @@ with h5py.File(filename, 'r') as f:
     # Segmentated images 1x 128x 128 values from 0 to 6
     segmented_data = list(f['b_'])
     # Real images three channels instad of 0-255 values for a pixel we have normalized values between [-1;1]
+    import pickle
+    pickle.dump(segmented_data, open('serialized_images.p', 'wb')) 
     real_images = list(f['ih'])
     # test_picture = np.array(real_images[70000])
     import copy
