@@ -1,6 +1,14 @@
-import torch.nn as nn
+import sys
+from random import randint
 import torch
-import numpy
+import torch.nn as nn
+import torch.optim as optim
+from torch.autograd import Variable
+from scipy.io import loadmat
+
+mat = loadmat('language_original.mat')
+for k, v in mat.iteritems():
+    exec(k +  " = mat['" + k + "']")
 
 dim_voc = 539 # size of vocabulary
 num_layers = 2 
@@ -39,9 +47,9 @@ class language_encoder(nn.Module):
         self.net_sleeve = nn.Linear(dim_h, dim_sleeve)
 
     def forward(self, x):
-        h0 = get_variable(Variable(torch.zeros(num_layers, bsz, dim_h))
-        output, hn = self.rnn(x, h0)
-        hn2 = hn[-1] #output of the last layer in the last state
+        h0 = get_variable(Variable(torch.zeros(num_layers, bsz, dim_h)))
+        _, hn = self.rnn(x, h0)
+        hn2 = hn[-1] 
         y_cate_new = self.net_cate_new(hn2)
         y_color = self.net_color(hn2)
         y_gender = self.net_gender(hn2)
