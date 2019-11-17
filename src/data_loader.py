@@ -6,6 +6,8 @@ import scipy.io
 import pickle
 import matplotlib.pyplot as plt
 import torch
+import numpy as np
+from skimage import color
 
 language_original_path = os.path.join(os.path.dirname(__file__),'../data/language_original.mat')
 indeces_path = os.path.join(os.path.dirname(__file__),'../data/ind.mat')
@@ -25,6 +27,10 @@ def construct_data(segmented_images,real_images,indeces,language):
     X['train']['cate_new'] =[]
     X['train']['segmented_image'] = []
     X['train']['description'] = []
+    X['train']['r'] = []
+    X['train']['g'] = []
+    X['train']['b'] = []
+    X['train']['y'] = []
 
     X['test'] = {}
     X['test']['gender'] =[]
@@ -33,6 +39,10 @@ def construct_data(segmented_images,real_images,indeces,language):
     X['test']['cate_new'] =[]
     X['test']['segmented_image'] = []
     X['test']['description'] = []
+    X['test']['r'] = []
+    X['test']['g'] = []
+    X['test']['b'] = []
+    X['test']['y'] = []
 
     y['train'] = []
     y['test'] = []
@@ -44,7 +54,14 @@ def construct_data(segmented_images,real_images,indeces,language):
         X['train']['sleeve'].append(language['sleeve_'][idx][0])
         X['train']['cate_new'].append(language['cate_new'][idx][0])
         X['train']['description'].append(str(language['engJ'][idx][0][0]))
-        X['train']['segmented_image'].append(segmented_images[idx][0])        
+        X['train']['segmented_image'].append(segmented_images[idx][0])   
+
+        r,g,b = np.median(real_images[idx][0]), np.median(real_images[idx][1]), np.median(real_images[idx][2])
+
+        X['train']['r'].append(r)
+        X['train']['g'].append(g)
+        X['train']['b'].append(b)
+        X['train']['y'].append(0.2125*r + 0.7154*g +  0.0721*b)
 
         y['train'].append(real_images[idx])
 
@@ -56,6 +73,13 @@ def construct_data(segmented_images,real_images,indeces,language):
         X['test']['cate_new'].append(language['cate_new'][idx][0])
         X['test']['description'].append(str(language['engJ'][idx][0][0]))
         X['test']['segmented_image'].append(segmented_images[idx][0])
+
+        r,g,b = np.median(real_images[idx][0]), np.median(real_images[idx][1]), np.median(real_images[idx][2])
+
+        X['test']['r'].append(r)
+        X['test']['g'].append(g)
+        X['test']['b'].append(b)
+        X['test']['y'].append(0.2125*r + 0.7154*g +  0.0721*b)
 
         y['test'].append(real_images[idx])
     
@@ -83,6 +107,8 @@ if not(os.path.isfile(segmented_images_raw_path) and os.path.isfile(real_images_
         import pickle
         pickle.dump(segmented_images, open(segmented_images_raw_path, 'wb')) 
         real_images = list(f['ih'])
+        #normalize the real images
+        real_images = normalize_pictures(real_images)
         pickle.dump(real_images, open(real_images_raw_path, 'wb')) 
 
 if None == segmented_images:
@@ -91,10 +117,11 @@ if None == segmented_images:
 if None == real_images:
     real_images = pickle.load(open(real_images_raw_path,'rb'))
 
-#normalize the real images
-real_images = normalize_pictures(real_images)
+# plt.imshow(torch.from_numpy(real_images[0]).permute(2,1,0))
 
-plt.imshow(torch.from_numpy(real_images[0]).permute(2,1,0))
+img = color.rgb2gray(torch.from_numpy(real_images[257]).permute(2,1,0))
+median = np.median(img)
+plt.imshow(img,cmap='gray')
 plt.show()
 
 # now read language
