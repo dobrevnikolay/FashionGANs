@@ -1,15 +1,6 @@
 import torch
 cuda = torch.cuda.is_available()
 device = torch.device("cuda:0" if cuda else "cpu")
-
-from torch.utils.data import DataLoader
-from torch.utils.data.sampler import SubsetRandomSampler
-from torchvision.transforms import ToTensor
-from functools import reduce
-
-import torch
-cuda = torch.cuda.is_available()
-device = torch.device("cuda:0" if cuda else "cpu")
 import numpy as np
 from torch.utils.data import DataLoader
 from torch.utils.data.sampler import SubsetRandomSampler
@@ -166,22 +157,6 @@ class D2(nn.Module):
 class Flatten(nn.Module):
     def forward(self, x):
         return x.view(x.size(0), -1)
-
-# The discriminator takes an image (real or fake)
-# and decides whether it is generated or not.
-discriminator = nn.Sequential(
-    nn.Conv2d(1, 64, kernel_size=4, stride=2),
-    nn.LeakyReLU(0.2),
-    nn.Conv2d(64, 128, kernel_size=4, stride=2),
-    nn.BatchNorm2d(128),
-    nn.LeakyReLU(0.2),
-    nn.Conv2d(128, 256, kernel_size=4, stride=2),
-    nn.BatchNorm2d(256),
-    nn.LeakyReLU(0.2),
-    Flatten(),
-    nn.Linear(256, 1),
-    nn.Sigmoid()
-).to(device)
 
 loss = nn.BCELoss()
 print("Using device:", device)
