@@ -1,10 +1,10 @@
 import torch
+import torch.nn as nn
 cuda = torch.cuda.is_available()
 device = torch.device("cuda:0" if cuda else "cpu")
 import numpy as np
 from torch.utils.data import DataLoader
 from torch.utils.data.sampler import SubsetRandomSampler
-from torchvision.datasets import MNIST
 from torchvision.transforms import ToTensor
 from functools import reduce
 
