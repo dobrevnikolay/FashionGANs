@@ -54,7 +54,7 @@ class language_encoder(nn.Module):
 
     def forward(self, x):
         h0 = get_variable(Variable(torch.zeros(num_layers, bsz, dim_h)))
-        _, hn = self.rnn(x['train']['description'], h0)
+        _, hn = self.rnn(x, h0)
         hn2 = hn[-1] 
         y_cate_new = self.net_cate_new(hn2)
         y_color = self.net_color(hn2)
@@ -96,7 +96,7 @@ for iter in range(30000):
         t = randint(0, m_train-1)
     sampled_id.append(t)
     sample_id = t
-    c = codeJ[sample_id][0]
+    c = X['codeJ'][sample_id][0]
     l = len(c)
     cuda_c_onehot = get_variable(torch.zeros(l, bsz, dim_voc))
     for i in range(l):

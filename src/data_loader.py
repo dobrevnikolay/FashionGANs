@@ -27,6 +27,7 @@ def construct_data(segmented_images,real_images,indeces,language):
     X['train']['cate_new'] =[]
     X['train']['segmented_image'] = []
     X['train']['description'] = []
+    X['train']['codeJ']
     X['train']['r'] = []
     X['train']['g'] = []
     X['train']['b'] = []
@@ -39,6 +40,7 @@ def construct_data(segmented_images,real_images,indeces,language):
     X['test']['cate_new'] =[]
     X['test']['segmented_image'] = []
     X['test']['description'] = []
+    X['test']['codeJ'] =[]
     X['test']['r'] = []
     X['test']['g'] = []
     X['test']['b'] = []
@@ -55,6 +57,7 @@ def construct_data(segmented_images,real_images,indeces,language):
         X['train']['cate_new'].append(language['cate_new'][idx][0])
         X['train']['description'].append(str(language['engJ'][idx][0][0]))
         X['train']['segmented_image'].append(segmented_images[idx][0])   
+        X['train']['codeJ'].append(str(language['codeJ'][idx][0][0]))
 
         r,g,b = np.median(real_images[idx][0]), np.median(real_images[idx][1]), np.median(real_images[idx][2])
 
@@ -73,6 +76,7 @@ def construct_data(segmented_images,real_images,indeces,language):
         X['test']['cate_new'].append(language['cate_new'][idx][0])
         X['test']['description'].append(str(language['engJ'][idx][0][0]))
         X['test']['segmented_image'].append(segmented_images[idx][0])
+        X['test']['codeJ'].append(str(language['codeJ'][idx][0][0]))
 
         r,g,b = np.median(real_images[idx][0]), np.median(real_images[idx][1]), np.median(real_images[idx][2])
 
