@@ -53,8 +53,8 @@ with h5py.File(h5_file_path, 'r') as f:
     #     save_image(test_picture_reshaped,image_name)
 
     #     segmented_image = np.array(segmented_data[i][0])
-    #     segmented_tensor = torch.from_numpy(segmented_image)
-    #     segmented_tensor = segmented_tensor.permute(1,0)
+        # segmented_tensor = torch.from_numpy(segmented_image)
+        # segmented_tensor = segmented_tensor.permute(1,0)
     #     segmented_image_name = '../images/seg'+str(i)+'.png'
     #     plt.imshow(segmented_tensor)
     #     plt.savefig(segmented_image_name)
