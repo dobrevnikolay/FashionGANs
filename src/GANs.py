@@ -1,16 +1,16 @@
 import torch
 import torch.nn as nn
-cuda = torch.cuda.is_available()
-device = torch.device("cuda:0" if cuda else "cpu")
 import numpy as np
-from torch.utils.data import DataLoader
 from torch.utils.data.sampler import SubsetRandomSampler
 from torchvision.transforms import ToTensor
 
+cuda = torch.cuda.is_available()
+device = torch.device("cuda:0" if cuda else "cpu")
+
 #todo: calculate the output size of each layer, foward, training loop
-def one_hot(labels):
-    y = torch.eye(len(classes)) 
-    return y[labels]
+# def one_hot(labels):
+#     y = torch.eye(len(classes)) 
+#     return y[labels]
 
 #sizes
 human_attributes_size = 8
