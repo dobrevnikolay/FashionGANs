@@ -8,12 +8,32 @@ import matplotlib.pyplot as plt
 import torch
 import numpy as np
 from skimage import color
+import copy
 
 language_original_path = os.path.join(os.path.dirname(__file__),'../data/language_original.mat')
 indeces_path = os.path.join(os.path.dirname(__file__),'../data/ind.mat')
 segmented_images_raw_path = os.path.join(os.path.dirname(__file__),'../data/segmented_images.p')
 real_images_raw_path = os.path.join(os.path.dirname(__file__),'../data/real_images.p')
 h5_file_path = os.path.join(os.path.dirname(__file__),'../data/G2.h5')
+
+def create_mask_for_skin_tone(segmented_image):
+    mask = copy.deepcopy(segmented_image)
+    for i in range(7):
+        if(2 == i or 6 == i):
+            mask[i == mask] = 1
+        else:
+            mask[i==mask] = 0
+    return mask
+
+def apply_mask(segmented_image,real_image):
+    mask = create_mask_for_skin_tone(segmented_image)
+    masked = copy.deepcopy(real_image)
+    for channel in range(len(real_image)):
+        masked[channel] = np.multiply(masked[channel],mask)
+    return masked
+
+
+    
 
 # should we normalize the real_images
 def construct_data(segmented_images,real_images,indeces,language):
@@ -27,7 +47,7 @@ def construct_data(segmented_images,real_images,indeces,language):
     X['train']['cate_new'] =[]
     X['train']['segmented_image'] = []
     X['train']['description'] = []
-    X['train']['codeJ']
+    X['train']['codeJ'] = []
     X['train']['r'] = []
     X['train']['g'] = []
     X['train']['b'] = []
@@ -40,7 +60,7 @@ def construct_data(segmented_images,real_images,indeces,language):
     X['test']['cate_new'] =[]
     X['test']['segmented_image'] = []
     X['test']['description'] = []
-    X['test']['codeJ'] =[]
+    X['test']['codeJ'] = []
     X['test']['r'] = []
     X['test']['g'] = []
     X['test']['b'] = []
@@ -58,8 +78,9 @@ def construct_data(segmented_images,real_images,indeces,language):
         X['train']['description'].append(str(language['engJ'][idx][0][0]))
         X['train']['segmented_image'].append(segmented_images[idx][0])   
         X['train']['codeJ'].append(str(language['codeJ'][idx][0][0]))
+        skin_tone = apply_mask(np.reshape(segmented_images[idx],(128,128)),real_images[idx])
 
-        r,g,b = np.median(real_images[idx][0]), np.median(real_images[idx][1]), np.median(real_images[idx][2])
+        r,g,b = np.median(skin_tone[0]), np.median(skin_tone[1]), np.median(skin_tone[2])
 
         X['train']['r'].append(r)
         X['train']['g'].append(g)
@@ -77,8 +98,9 @@ def construct_data(segmented_images,real_images,indeces,language):
         X['test']['description'].append(str(language['engJ'][idx][0][0]))
         X['test']['segmented_image'].append(segmented_images[idx][0])
         X['test']['codeJ'].append(str(language['codeJ'][idx][0][0]))
+        skin_tone = apply_mask(np.reshape(segmented_images[idx],(128,128)),real_images[idx])
 
-        r,g,b = np.median(real_images[idx][0]), np.median(real_images[idx][1]), np.median(real_images[idx][2])
+        r,g,b = np.median(skin_tone[0]), np.median(skin_tone[1]), np.median(skin_tone[2])
 
         X['test']['r'].append(r)
         X['test']['g'].append(g)
@@ -120,13 +142,6 @@ if None == segmented_images:
 
 if None == real_images:
     real_images = pickle.load(open(real_images_raw_path,'rb'))
-
-# plt.imshow(torch.from_numpy(real_images[0]).permute(2,1,0))
-
-img = color.rgb2gray(torch.from_numpy(real_images[257]).permute(2,1,0))
-median = np.median(img)
-plt.imshow(img,cmap='gray')
-plt.show()
 
 # now read language
 lang_org = scipy.io.loadmat(language_original_path)
