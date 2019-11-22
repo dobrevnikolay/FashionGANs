@@ -1,4 +1,4 @@
-#################Language Encoder Loading mat File###################
+#################Language Encoder Using data_loader###################
 import sys
 from random import randint
 import torch
@@ -7,7 +7,6 @@ import torch.optim as optim
 from torch.autograd import Variable
 from scipy.io import loadmat
 import matplotlib.pyplot as plt
-
 ############### parameters ###################
 dim_voc = 539 # size of vocabulary
 num_layers = 2 
@@ -20,31 +19,6 @@ dim_sleeve = 4 # length of sleeve
 
 m = 78979 # size of test set
 m_train = 70000 # size of training set
-
-
-############### loading ###################
-
-
-mat = loadmat('language_original.mat')
-for k, v in mat.items():
-    exec(k +  " = mat['" + k + "']")
-
-
-
-indmat = loadmat('ind.mat')
-train_ind = torch.IntTensor(m_train)
-for i in range(m_train):
-    train_ind[i] = int(indmat['train_ind'][i][0] - 1)
-
-data_cate_new = torch.IntTensor(m, 1)
-data_color = torch.IntTensor(m, 1)
-data_gender = torch.IntTensor(m, 1)
-data_sleeve = torch.IntTensor(m, 1)
-for i in range(m):
-    data_cate_new[i][0] = int(cate_new[i][0] - 1)
-    data_color[i][0] = int(color_[i][0] - 1)
-    data_gender[i][0] = int(gender_[i][0])
-    data_sleeve[i][0] = int(sleeve_[i][0] - 1)
 
 #################CUDA###################
 use_cuda = torch.cuda.is_available()
@@ -80,7 +54,7 @@ class language_encoder(nn.Module):
 
     def forward(self, x):
         h0 = get_variable(Variable(torch.zeros(num_layers, bsz, dim_h)))
-        _, hn = self.rnn(x, h0)
+        _, hn = self.rnn(x['train']['description'], h0)
         hn2 = hn[-1] 
         y_cate_new = self.net_cate_new(hn2)
         y_color = self.net_color(hn2)
@@ -121,7 +95,7 @@ for iter in range(30000):
     while t in sampled_id:
         t = randint(0, m_train-1)
     sampled_id.append(t)
-    sample_id = train_ind[t]
+    sample_id = t
     c = codeJ[sample_id][0]
     l = len(c)
     cuda_c_onehot = get_variable(torch.zeros(l, bsz, dim_voc))
@@ -129,10 +103,10 @@ for iter in range(30000):
         cuda_c_onehot[i][0][int(c[i][0]-1)] = 1
     cuda_c_onehot = Variable(cuda_c_onehot)
 
-    cuda_label_cate_new.data[0] = data_cate_new[sample_id][0]
-    cuda_label_color.data[0] = data_color[sample_id][0]
-    cuda_label_gender.data[0] = data_gender[sample_id][0]
-    cuda_label_sleeve.data[0] = data_sleeve[sample_id][0]
+    cuda_label_cate_new.data[0] = X['train']['cate_new'][sample_id][0]
+    cuda_label_color.data[0] = X['train']['color'][sample_id][0]
+    cuda_label_gender.data[0] = X['train']['gender'][sample_id][0]
+    cuda_label_sleeve.data[0] = X['train']['sleeve'][sample_id][0]
 
     optimizer.zero_grad()
     hn2, y_cate_new, y_color, y_gender, y_sleeve = model(cuda_c_onehot)
