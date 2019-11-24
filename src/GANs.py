@@ -3,6 +3,8 @@ import torch.nn as nn
 import numpy as np
 from torch.utils.data.sampler import SubsetRandomSampler
 from torchvision.transforms import ToTensor
+from torch.autograd import Variable
+import os
 
 cuda = torch.cuda.is_available()
 device = torch.device("cuda:0" if cuda else "cpu")
@@ -117,18 +119,4 @@ class Discriminator1(nn.Module):
         d_by_4 = x_design_encoding.repeat(1,4)
         input_for_layer6 = torch.cat((layer5,d_by_4),0)
         return self.D1_LastLayers(input_for_layer6)
-
-
-
-flatten_image_size = 128*128
-
-latent_dim_g2 = flatten_image_size + gausian_noise_size + human_attributes_size # 16492
-
-
-
-
-loss = nn.BCELoss()
-print("Using device:", device)
-
-generator_optim = torch.optim.Adam(generator.parameters(), 2e-4, betas=(0.5, 0.999))
-discriminator_optim = torch.optim.Adam(discriminator.parameters(), 2e-4, betas=(0.5, 0.999))
+        

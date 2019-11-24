@@ -64,6 +64,12 @@ def plot_tensor_image(t_img):
         plt.imshow(segmented_tensor)
         plt.show()
 
+def get_downsampled_batch(batchsize,batch):
+    batch_down_sampled = torch.ones(batchsize, 4, 16,16)
+    for i in range(batchsize):
+        batch_down_sampled[i]=get_downsampled_image(batch[i])
+    return batch_down_sampled
+
 print('start downsampling')
 img = next(iter(new_dict))
 t_img = get_downsampled_image(img)

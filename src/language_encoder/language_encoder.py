@@ -7,7 +7,7 @@ import torch.optim as optim
 from torch.autograd import Variable
 from scipy.io import loadmat
 import matplotlib.pyplot as plt
-
+import os
 ############### parameters ###################
 dim_voc = 539 # size of vocabulary
 num_layers = 2 
@@ -17,14 +17,11 @@ dim_cate_new = 19 # category of clothes
 dim_color = 17 #color of clothes
 dim_gender = 2 # gender
 dim_sleeve = 4 # length of sleeve
-
 m = 78979 # size of test set
 m_train = 70000 # size of training set
 
 
 ############### loading ###################
-
-
 mat = loadmat('language_original.mat')
 for k, v in mat.items():
     exec(k +  " = mat['" + k + "']")
