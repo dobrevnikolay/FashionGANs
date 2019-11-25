@@ -92,84 +92,84 @@ class language_encoder(nn.Module):
 
 ############### training ###################
 
-model = get_variable(language_encoder())
-train_iter = []#for plot
-train_loss = []#for plot
-criterion = nn.CrossEntropyLoss()
-cuda_label_cate_new = get_variable(Variable(torch.LongTensor(bsz).zero_()))
-cuda_label_color = get_variable(Variable(torch.LongTensor(bsz).zero_()))
-cuda_label_gender = get_variable(Variable(torch.LongTensor(bsz).zero_()))
-cuda_label_sleeve = get_variable(Variable(torch.LongTensor(bsz).zero_()))
+# model = get_variable(language_encoder())
+# train_iter = []#for plot
+# train_loss = []#for plot
+# criterion = nn.CrossEntropyLoss()
+# cuda_label_cate_new = get_variable(Variable(torch.LongTensor(bsz).zero_()))
+# cuda_label_color = get_variable(Variable(torch.LongTensor(bsz).zero_()))
+# cuda_label_gender = get_variable(Variable(torch.LongTensor(bsz).zero_()))
+# cuda_label_sleeve = get_variable(Variable(torch.LongTensor(bsz).zero_()))
 
-optimizer = optim.SGD(model.parameters(), lr=0.01, momentum=0.5)
-model.train()
-sampled_id = []
-for iter in range(30000):
+# optimizer = optim.SGD(model.parameters(), lr=0.01, momentum=0.5)
+# model.train()
+# sampled_id = []
+# for iter in range(30000):
 
-    #decrease learning rate
-    if iter == 10000:
-        optimizer = optim.SGD(model.parameters(), lr=0.001) 
+#     #decrease learning rate
+#     if iter == 10000:
+#         optimizer = optim.SGD(model.parameters(), lr=0.001) 
 
-    if iter == 20000:
-        optimizer = optim.SGD(model.parameters(), lr=0.0003)
+#     if iter == 20000:
+#         optimizer = optim.SGD(model.parameters(), lr=0.0003)
     
-    if iter == 25000:
-        optimizer = optim.SGD(model.parameters(), lr=0.0001)
+#     if iter == 25000:
+#         optimizer = optim.SGD(model.parameters(), lr=0.0001)
 
 
-    assert bsz == 1
+#     assert bsz == 1
 
-    t = randint(0, m_train-1)
-    while t in sampled_id:
-        t = randint(0, m_train-1)
-    sampled_id.append(t)
-    sample_id = train_ind[t]
-    c = codeJ[sample_id][0]
-    l = len(c)
-    cuda_c_onehot = get_variable(torch.zeros(l, bsz, dim_voc))
-    for i in range(l):
-        cuda_c_onehot[i][0][int(c[i][0]-1)] = 1
-    cuda_c_onehot = Variable(cuda_c_onehot)
+#     t = randint(0, m_train-1)
+#     while t in sampled_id:
+#         t = randint(0, m_train-1)
+#     sampled_id.append(t)
+#     sample_id = train_ind[t]
+#     c = codeJ[sample_id][0]
+#     l = len(c)
+#     cuda_c_onehot = get_variable(torch.zeros(l, bsz, dim_voc))
+#     for i in range(l):
+#         cuda_c_onehot[i][0][int(c[i][0]-1)] = 1
+#     cuda_c_onehot = Variable(cuda_c_onehot)
 
-    cuda_label_cate_new.data[0] = data_cate_new[sample_id][0]
-    cuda_label_color.data[0] = data_color[sample_id][0]
-    cuda_label_gender.data[0] = data_gender[sample_id][0]
-    cuda_label_sleeve.data[0] = data_sleeve[sample_id][0]
+#     cuda_label_cate_new.data[0] = data_cate_new[sample_id][0]
+#     cuda_label_color.data[0] = data_color[sample_id][0]
+#     cuda_label_gender.data[0] = data_gender[sample_id][0]
+#     cuda_label_sleeve.data[0] = data_sleeve[sample_id][0]
 
-    optimizer.zero_grad()
-    hn2, y_cate_new, y_color, y_gender, y_sleeve = model(cuda_c_onehot)
-    loss_cate_new = criterion(y_cate_new, cuda_label_cate_new)
-    loss_color = criterion(y_color, cuda_label_color)
-    loss_gender = criterion(y_gender, cuda_label_gender)
-    loss_sleeve = criterion(y_sleeve, cuda_label_sleeve)
-    loss = loss_cate_new + loss_color + loss_gender + loss_sleeve
-    if iter % 2000 == 0:
-        train_iter.append(iter)
-        train_loss.append(loss)
-    loss.backward()
-    optimizer.step()
-
-
-    if iter % 1000 == 0:
-        print('Training Iter %d: Loss = %.5f, cate_new (%.5f), color (%.5f), gender(%.5f), sleeve(%.5f)' % (iter, loss.data.item(), loss_cate_new.data.item(), loss_color.data.item(), loss_gender.data.item(), loss_sleeve.data.item()))
-
-    if iter % 10000 == 1:
-        torch.save(model.state_dict(), 'rnn_latest.pth')
+#     optimizer.zero_grad()
+#     hn2, y_cate_new, y_color, y_gender, y_sleeve = model(cuda_c_onehot)
+#     loss_cate_new = criterion(y_cate_new, cuda_label_cate_new)
+#     loss_color = criterion(y_color, cuda_label_color)
+#     loss_gender = criterion(y_gender, cuda_label_gender)
+#     loss_sleeve = criterion(y_sleeve, cuda_label_sleeve)
+#     loss = loss_cate_new + loss_color + loss_gender + loss_sleeve
+#     if iter % 2000 == 0:
+#         train_iter.append(iter)
+#         train_loss.append(loss)
+#     loss.backward()
+#     optimizer.step()
 
 
-    # if iter % 1000 == 0:
-    #     plt.plot(train_iter, train_loss)
-    #     plt.show()
-    #     plt.pause(0.01)
+#     if iter % 1000 == 0:
+#         print('Training Iter %d: Loss = %.5f, cate_new (%.5f), color (%.5f), gender(%.5f), sleeve(%.5f)' % (iter, loss.data.item(), loss_cate_new.data.item(), loss_color.data.item(), loss_gender.data.item(), loss_sleeve.data.item()))
+
+#     if iter % 10000 == 1:
+#         torch.save(model.state_dict(), 'rnn_latest.pth')
+
+
+#     # if iter % 1000 == 0:
+#     #     plt.plot(train_iter, train_loss)
+#     #     plt.show()
+#     #     plt.pause(0.01)
 
 
 
-plt.plot(train_iter, train_loss)
-plt.show()
+# plt.plot(train_iter, train_loss)
+# plt.show()
 
 #################store####################
-# model = language_encoder()
-# model.load_state_dict(torch.load('rnn_latest.pth'))
+model = language_encoder()
+model.load_state_dict(torch.load('rnn_latest.pth'))
 encodes = np.zeros((78979,100))
 for i in range(len(codeJ)):
     if  i %5000 ==0:
@@ -177,12 +177,12 @@ for i in range(len(codeJ)):
     c = codeJ[i][0]
     l = len(c)
     cuda_c_onehot = get_variable(torch.zeros(l, bsz, dim_voc))
-    for i in range(l):
-        cuda_c_onehot[i][0][int(c[i][0]-1)] = 1
+    for j in range(l):
+        cuda_c_onehot[j][0][int(c[j][0]-1)] = 1
         cuda_c_onehot = Variable(cuda_c_onehot,requires_grad=False)
     encode, a, b, c, d = model.forward(cuda_c_onehot)
     encodes[i]=encode.cpu().detach().numpy()
 np.save('encode.npy',encodes)
 
 
-# np.load('encode.npy',)
+# np.load('encode.npy')
