@@ -7,21 +7,26 @@ import torch.optim as optim
 from torch.autograd import Variable
 from scipy.io import loadmat
 import matplotlib.pyplot as plt
-import os
+import numpy as np
+
 ############### parameters ###################
 dim_voc = 539 # size of vocabulary
 num_layers = 2 
 bsz = 1 #batch only 1 for convenience
-dim_h = 40 # rnn hidden units
+dim_h = 100 # rnn hidden units
 dim_cate_new = 19 # category of clothes
 dim_color = 17 #color of clothes
 dim_gender = 2 # gender
 dim_sleeve = 4 # length of sleeve
+
 m = 78979 # size of test set
-m_train = 70000 # size of training set
+m_train = 60000 # size of training set
+m_test = 70000
 
 
 ############### loading ###################
+
+
 mat = loadmat('language_original.mat')
 for k, v in mat.items():
     exec(k +  " = mat['" + k + "']")
@@ -156,5 +161,28 @@ for iter in range(30000):
     #     plt.plot(train_iter, train_loss)
     #     plt.show()
     #     plt.pause(0.01)
+
+
+
 plt.plot(train_iter, train_loss)
 plt.show()
+
+#################store####################
+# model = language_encoder()
+# model.load_state_dict(torch.load('rnn_latest.pth'))
+encodes = np.zeros((78979,100))
+for i in range(len(codeJ)):
+    if  i %5000 ==0:
+        print((i/78979))
+    c = codeJ[i][0]
+    l = len(c)
+    cuda_c_onehot = get_variable(torch.zeros(l, bsz, dim_voc))
+    for i in range(l):
+        cuda_c_onehot[i][0][int(c[i][0]-1)] = 1
+        cuda_c_onehot = Variable(cuda_c_onehot,requires_grad=False)
+    encode, a, b, c, d = model.forward(cuda_c_onehot)
+    encodes[i]=encode.cpu().detach().numpy()
+np.save('encode.npy',encodes)
+
+
+# np.load('encode.npy',)
