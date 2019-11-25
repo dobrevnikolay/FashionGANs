@@ -112,8 +112,8 @@ class Discriminator1(nn.Module):
             nn.LeakyReLU(0.2),
         )
 
-    def forward(self, x_image,x_down_sampled, x_design_encoding):
-        layer4 = self.D1_Layer1(x_image)
+    def forward(self, x_segmented_image,x_down_sampled, x_design_encoding):
+        layer4 = self.D1_Layer1(x_segmented_image)
         x_down_sampled = self.D1_condition(x_down_sampled)
         layer5 = self.D1_concatenation(torch.cat((Flatten(layer4),Flatten(x_down_sampled)),0))
         d_by_4 = x_design_encoding.repeat(1,4)
