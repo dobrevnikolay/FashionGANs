@@ -70,10 +70,10 @@ def get_downsampled_batch(batchsize,batch):
         batch_down_sampled[i]=get_downsampled_image(batch[i])
     return batch_down_sampled
 
-print('start downsampling')
-img = next(iter(new_dict))
-t_img = get_downsampled_image(img)
-plot_tensor_image(t_img)
+#print('start downsampling')
+#img = next(iter(new_dict))
+#t_img = get_downsampled_image(img)
+#plot_tensor_image(t_img)
 
 
-print('end downsampling')
+#print('end downsampling')
