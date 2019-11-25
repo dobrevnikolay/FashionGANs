@@ -4,6 +4,7 @@ from torch.utils.data import DataLoader
 import torch
 import GANs.py
 import get_downsampled_batch from down_sample
+from torch.autograd import Variable
 
 
 cuda = torch.cuda.is_available()
@@ -21,10 +22,8 @@ testing_data = data_loader.FashionData(X,y,'test')
 
 batch_size = 64
 
-train_loader = DataLoader(training_data, batch_size=batch_size,
-                          sampler=stratified_sampler(dset_train.train_labels), pin_memory=cuda)
-test_loader  = DataLoader(testing_data, batch_size=batch_size, 
-                          sampler=stratified_sampler(dset_test.test_labels), pin_memory=cuda)
+train_loader = DataLoader(training_data, batch_size=batch_size,pin_memory=cuda)
+test_loader  = DataLoader(testing_data, batch_size=batch_size, pin_memory=cuda)
 
 
 
@@ -49,6 +48,7 @@ discriminator_1_optim = torch.optim.Adam(discriminator.parameters(), 2e-4, betas
 # mS0: downsampled segmented image
 # d: designed encoding
 # dz: {d,z} encoding and noise
+# y: real image
 #TODO assign data to these variables above
 #TODO whether create variables for each step or just once?
 #TODO should batch works?
@@ -62,14 +62,16 @@ num_epochs = 50
 for epoch in range(num_epochs):
     batch_d_loss, batch_g_loss = [], []
     
-    for x, _ in train_loader:
-        batch_size = x.size(0)
+    for d,mS0,S0,y in train_loader:
+        batch_size = d.size(0)
         # True data is given label 1, while fake data is given label 0
         true_label = torch.ones(batch_size, 1).to(device)
         fake_label = torch.zeros(batch_size, 1).to(device)
         
         D1.zero_grad()
         G1.zero_grad()
+
+        
         
         #################### Update D #############################
         # loss 1. real image + real condition -> 1
@@ -82,12 +84,13 @@ for epoch in range(num_epochs):
         error_true.backward()
 
         # loss 2. sampled wrong image + real condition -> 0
+        # shuffle d        
         x_notmatch_S0 = Variable(S0).to(device)
         x_notmatch_mS0 = Variable(mS0).to(device)
         x_notmatch_d = Variable(d).to(device)    
         output = D1.forward(x_notmatch_S0,x_notmatch_mS0,x_notmatch_d)
 
-        error_true = loss(output, false_label) 
+        error_true = loss(output, fake_label) 
         error_true.backward()
 
         # loss 3. generated fake image + real condition -> 0

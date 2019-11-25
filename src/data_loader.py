@@ -153,9 +153,10 @@ def load_data(encoded_values):
 
     segmented_images = None
     real_images = None
-
+    print("Check if the serialized data is present")
     # check if the serialized images are present if not create them
     if not(os.path.isfile(segmented_images_raw_path) and os.path.isfile(real_images_raw_path)):
+        print("We have to read the h5 file, it will take time")
         with h5py.File(h5_file_path, 'r') as f:   
 
             # Get the data
@@ -168,20 +169,23 @@ def load_data(encoded_values):
             #normalize the real images
             real_images = normalize_pictures(real_images)
             pickle.dump(real_images, open(real_images_raw_path, 'wb')) 
-
+            print("H5 read and data has been serialized")
     if None == segmented_images:
         segmented_images = pickle.load(open(segmented_images_raw_path, 'rb'))
 
     if None == real_images:
         real_images = pickle.load(open(real_images_raw_path,'rb'))
-
+    print("Images has been loaded successfully")
+    print("Now reading .mat files")
     # now read language
     lang_org = scipy.io.loadmat(language_original_path)
 
     # read the indeces as well
     indeces = scipy.io.loadmat(indeces_path)
 
+    print("Everything is loaded now constructing the dictionaries")
     (X,y) = construct_data(segmented_images,real_images,indeces,lang_org, encoded_values)
+    print("Data constructed")
 
     return (X,y)
 
