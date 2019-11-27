@@ -17,6 +17,8 @@ indeces_path = os.path.join(os.path.dirname(__file__),'../data/ind.mat')
 segmented_images_raw_path = os.path.join(os.path.dirname(__file__),'../data/segmented_images.p')
 real_images_raw_path = os.path.join(os.path.dirname(__file__),'../data/real_images.p')
 h5_file_path = os.path.join(os.path.dirname(__file__),'../data/G2.h5')
+lang_encoding = os.path.join(os.path.dirname(__file__),'../data/encode.npy')
+
 
 def create_mask_for_skin_tone(segmented_image):
     mask = copy.deepcopy(segmented_image)
@@ -51,10 +53,12 @@ class FashionData(Dataset):
         design_encoding.append(self.X['b'][index])
         design_encoding.append(self.X['y'][index])
         design_encoding.append(self.X['encoding'][index])
+
+        #return (self.X['segmented_image'][index],self.y[index])
         return (design_encoding,self.X['down_sampled_images'][index],self.X['segmented_image'][index],self.y[index])        
 
     def __len__(self):
-        return len(X)
+        return len(self.X)
 
     
 
@@ -84,6 +88,7 @@ def construct_data(segmented_images,real_images,indeces,language,encoded_values)
     X['test']['sleeve'] =[]
     X['test']['cate_new'] =[]
     X['test']['segmented_image'] = []
+    X['test']['down_sampled_images'] = []
     X['test']['description'] = []
     X['test']['encoding'] = []
     X['test']['codeJ'] = []
@@ -94,6 +99,7 @@ def construct_data(segmented_images,real_images,indeces,language,encoded_values)
 
     y['train'] = []
     y['test'] = []
+
 
     for i in range(len(indeces['train_ind'])):
         idx = indeces['train_ind'][i][0] - 1
@@ -113,8 +119,8 @@ def construct_data(segmented_images,real_images,indeces,language,encoded_values)
         X['train']['g'].append(g)
         X['train']['b'].append(b)
         X['train']['y'].append(0.2125*r + 0.7154*g +  0.0721*b)
-        X['train']['down_sampled_images'].append(down_sample.get_downsampled_image(segmented_images[idx][0]))
-
+        #X['train']['down_sampled_images'].append(down_sample.get_downsampled_image(segmented_images[idx][0]))
+        X['train']['down_sampled_images'].append(down_sample.get_downsampled_image(segmented_images[idx]))
         y['train'].append(real_images[idx])
 
     for i in range(len(indeces['test_ind'])):
@@ -135,7 +141,8 @@ def construct_data(segmented_images,real_images,indeces,language,encoded_values)
         X['test']['g'].append(g)
         X['test']['b'].append(b)
         X['test']['y'].append(0.2125*r + 0.7154*g +  0.0721*b)
-        X['test']['down_sampled_images'].append(down_sample.get_downsampled_image(segmented_images[idx][0]))
+
+        X['test']['down_sampled_images'].append(down_sample.get_downsampled_image(segmented_images[idx]))
 
         y['test'].append(real_images[idx])
     
@@ -149,7 +156,7 @@ def normalize_pictures(real_images):
     return real_images
 
 
-def load_data(encoded_values):
+def load_data():
 
     segmented_images = None
     real_images = None
@@ -163,7 +170,6 @@ def load_data(encoded_values):
             # Segmentated images 1x 128x 128 values from 0 to 6
             segmented_images = list(f['b_'])
             # Real images three channels instad of 0-255 values for a pixel we have normalized values between [-1;1]
-            import pickle
             pickle.dump(segmented_images, open(segmented_images_raw_path, 'wb')) 
             real_images = list(f['ih'])
             #normalize the real images
@@ -171,7 +177,9 @@ def load_data(encoded_values):
             pickle.dump(real_images, open(real_images_raw_path, 'wb')) 
             print("H5 read and data has been serialized")
     if None == segmented_images:
-        segmented_images = pickle.load(open(segmented_images_raw_path, 'rb'))
+        infile = open(segmented_images_raw_path,'rb')
+        segmented_images = pickle.load(infile)
+        infile.close()
 
     if None == real_images:
         real_images = pickle.load(open(real_images_raw_path,'rb'))
@@ -184,11 +192,10 @@ def load_data(encoded_values):
     indeces = scipy.io.loadmat(indeces_path)
 
     print("Everything is loaded now constructing the dictionaries")
+    
+    encoded_values = np.load(lang_encoding)
+
     (X,y) = construct_data(segmented_images,real_images,indeces,lang_org, encoded_values)
     print("Data constructed")
 
     return (X,y)
-
-
-
-

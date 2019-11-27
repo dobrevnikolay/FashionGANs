@@ -27,13 +27,13 @@ m_test = 70000
 ############### loading ###################
 
 
-mat = loadmat('language_original.mat')
+mat = loadmat('src/language_encoder/language_original.mat')
 for k, v in mat.items():
     exec(k +  " = mat['" + k + "']")
 
 
 
-indmat = loadmat('ind.mat')
+indmat = loadmat('src/language_encoder/ind.mat')
 train_ind = torch.IntTensor(m_train)
 for i in range(m_train):
     train_ind[i] = int(indmat['train_ind'][i][0] - 1)
@@ -169,8 +169,10 @@ class language_encoder(nn.Module):
 
 #################store####################
 model = language_encoder()
-model.load_state_dict(torch.load('rnn_latest.pth'))
+model.load_state_dict(torch.load('src/language_encoder/rnn_latest.pth'))
 encodes = np.zeros((78979,100))
+print('Staring')
+
 for i in range(len(codeJ)):
     if  i %5000 ==0:
         print((i/78979))
@@ -184,5 +186,5 @@ for i in range(len(codeJ)):
     encodes[i]=encode.cpu().detach().numpy()
 np.save('encode.npy',encodes)
 
-
+print('Done')
 # np.load('encode.npy')

@@ -50,9 +50,9 @@ def get_downsampled_image(img):
     img_4_lay_tensor = img_4_lay_tensor.resize(1,4,128,128)
     #segmented_image = segmented_image.view(1,-1,-1,-1)
     # downsampling by 1/8
-    img_4_lay_tensor = torch.nn.functional.interpolate(img_4_lay_tensor, scale_factor=(0.125, 0.125),  mode='bicubic', align_corners=True)
+    img_4_lay_tensor = torch.nn.functional.interpolate(img_4_lay_tensor, scale_factor=(0.0625, 0.0625),  mode='bicubic', align_corners=True)
 
-    img_4_lay_tensor = img_4_lay_tensor.resize(4,16,16)
+    img_4_lay_tensor = img_4_lay_tensor.resize(4,8,8)
     img_4_lay_tensor = img_4_lay_tensor.permute(0,2,1)
         
     return img_4_lay_tensor
@@ -60,12 +60,12 @@ def get_downsampled_image(img):
 
 def plot_tensor_image(t_img):
     for i in range(len(t_img)):
-        segmented_tensor = t_img[i,:,:].resize(16,16)
+        segmented_tensor = t_img[i,:,:].resize(8,8)
         plt.imshow(segmented_tensor)
         plt.show()
 
 def get_downsampled_batch(batchsize,batch):
-    batch_down_sampled = torch.ones(batchsize, 4, 16,16)
+    batch_down_sampled = torch.ones(batchsize, 4, 8,8)
     for i in range(batchsize):
         batch_down_sampled[i]=get_downsampled_image(batch[i])
     return batch_down_sampled
@@ -73,7 +73,8 @@ def get_downsampled_batch(batchsize,batch):
 #print('start downsampling')
 #img = next(iter(new_dict))
 #t_img = get_downsampled_image(img)
-#plot_tensor_image(t_img)
 
+#dd = t_img[0][0]
+#plot_tensor_image(t_img)
 
 #print('end downsampling')
