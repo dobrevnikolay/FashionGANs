@@ -12,12 +12,12 @@ import copy
 from torch.utils.data import Dataset
 import down_sample
 
-language_original_path = os.path.join(os.path.dirname(__file__),'../data/language_original.mat')
-indeces_path = os.path.join(os.path.dirname(__file__),'../data/ind.mat')
-segmented_images_raw_path = os.path.join(os.path.dirname(__file__),'../data/segmented_images.p')
-real_images_raw_path = os.path.join(os.path.dirname(__file__),'../data/real_images.p')
-h5_file_path = os.path.join(os.path.dirname(__file__),'../data/G2.h5')
-lang_encoding = os.path.join(os.path.dirname(__file__),'../data/encode.npy')
+language_original_path = os.path.join(os.path.dirname(__file__),'..','data','language_original.mat')
+indeces_path = os.path.join(os.path.dirname(__file__),'..','data','ind.mat')
+segmented_images_raw_path = os.path.join(os.path.dirname(__file__),'..','data','segmented_images.p')
+real_images_raw_path = os.path.join(os.path.dirname(__file__),'..','data','real_images.p')
+h5_file_path = os.path.join(os.path.dirname(__file__),'..','data','G2.h5')
+lang_encoding = os.path.join(os.path.dirname(__file__),'..','data','encode.npy')
 
 
 def create_mask_for_skin_tone(segmented_image):
@@ -100,8 +100,13 @@ def construct_data(segmented_images,real_images,indeces,language,encoded_values)
     y['train'] = []
     y['test'] = []
 
+    length_to_iterate_train = len(indeces['train_ind'])
+    # length_to_iterate_train = 1000
+    length_to_iterate_test = len(indeces['test_ind'])
+    # length_to_iterate_test = 200
 
-    for i in range(len(indeces['train_ind'])):
+
+    for i in range(length_to_iterate_train):
         idx = indeces['train_ind'][i][0] - 1
         X['train']['gender'].append(language['gender_'][idx][0])
         X['train']['color'].append(language['color_'][idx][0])
@@ -124,7 +129,7 @@ def construct_data(segmented_images,real_images,indeces,language,encoded_values)
         X['train']['down_sampled_images'].append(down_sample.get_downsampled_image(segmented_images[idx]))
         y['train'].append(real_images[idx])
 
-    for i in range(len(indeces['test_ind'])):
+    for i in range(length_to_iterate_test):
         idx = indeces['test_ind'][i][0] - 1
         X['test']['gender'].append(language['gender_'][idx][0])
         X['test']['color'].append(language['color_'][idx][0])
@@ -199,5 +204,9 @@ def load_data():
 
     (X,y) = construct_data(segmented_images,real_images,indeces,lang_org, encoded_values)
     print("Data constructed")
-
+    print("Pickle the data")
+    handle = open(os.path.join(os.path.dirname(__file__),'..','data','data.pkl'),'wb')
+    pickle.dump((X,y), handle, protocol=pickle.HIGHEST_PROTOCOL)
+    handle.close()
+    
     return (X,y)

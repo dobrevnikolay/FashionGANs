@@ -1,22 +1,24 @@
 import data_loader
-import language_encoder
+# import language_encoder
 from torch.utils.data import DataLoader
+import os
+from matplotlib import pyplot as plt
 import torch
-import GANs.py
-import get_downsampled_batch from down_sample
+import GANs
+import down_sample
 from torch.autograd import Variable
+import pickle
 
 
 cuda = torch.cuda.is_available()
 device = torch.device("cuda:0" if cuda else "cpu")
+X, y = None,None
 
-# train language_encoder
-
-# get encoded values for all pictures
-encoded_description = []
-
-(X,y) = data_loader.load_data(encoded_description)
-
+if os.path.isfile(os.path.dirname(__file__)+'../data/data.pickle'):
+    with open(os.path.dirname(__file__)+'../data/data.pickle') as handle:
+        X,y = pickle.load(handle)
+else:
+    X, y = data_loader.load_data()
 training_data = data_loader.FashionData(X,y,'train')
 testing_data = data_loader.FashionData(X,y,'test')
 
@@ -33,14 +35,14 @@ flatten_image_size = 128*128
 
 latent_dim_g2 = flatten_image_size + gausian_noise_size + human_attributes_size # 16492
 
-G1 = Generator1()
-D1 = Discriminator1()
+G1 = GANs.Generator1()
+D1 = GANs.Discriminator1()
 
-loss = nn.BCELoss()
+loss = torch.nn.BCELoss()
 print("Using device:", device)
 
-generator_1_optim = torch.optim.Adam(generator.parameters(), 2e-4, betas=(0.5, 0.999))
-discriminator_1_optim = torch.optim.Adam(discriminator.parameters(), 2e-4, betas=(0.5, 0.999))
+generator_1_optim = torch.optim.Adam(G1.parameters(), 2e-4, betas=(0.5, 0.999))
+discriminator_1_optim = torch.optim.Adam(D1.parameters(), 2e-4, betas=(0.5, 0.999))
 
 
 
@@ -62,8 +64,25 @@ num_epochs = 50
 for epoch in range(num_epochs):
     batch_d_loss, batch_g_loss = [], []
     
-    for d,mS0,S0,y in train_loader:
-        batch_size = d.size(0)
+    for i , data in enumerate(train_loader, 0):
+        # X['d'],X['mS0'], X['S0'],y
+        # encoding
+        #d = data
+        batch_size = 13
+        d, mS0, S0, label = data
+        #batch_size = d.size()[0]
+        # we flatten d into one big vector
+        d_temp=[]
+        for i in range(len(d)):
+           for j in range(len(d[i])):
+              d_temp.append(d[i][j])
+
+        d = d_temp
+        
+        #flatten the downsampled image
+        mS0 = mS0.view(batch_size, 64, 4)
+        # flatten the segmented image
+        S0 = S0.view(batch_size, 16384, 7)  # 128 * 128 = 16384 
         # True data is given label 1, while fake data is given label 0
         true_label = torch.ones(batch_size, 1).to(device)
         fake_label = torch.zeros(batch_size, 1).to(device)
@@ -83,12 +102,17 @@ for epoch in range(num_epochs):
         error_true = loss(output, true_label) 
         error_true.backward()
 
-        # loss 2. sampled wrong image + real condition -> 0
-        # shuffle d        
-        x_notmatch_S0 = Variable(S0).to(device)
-        x_notmatch_mS0 = Variable(mS0).to(device)
-        x_notmatch_d = Variable(d).to(device)    
-        output = D1.forward(x_notmatch_S0,x_notmatch_mS0,x_notmatch_d)
+        # loss 2. sampled real image + wrong condition -> 0
+        # shuffle d     
+        # shuffle the true d row wise
+        x_notmatch_d = x_true_d[torch.randperm(x_true_d.size()[0])]
+
+        #we pass the same real image and segmented image and we shuffle the description to get wrong description
+        #x_notmatch_S0 = Variable(S0).to(device)
+        #x_notmatch_mS0 = Variable(mS0).to(device)
+        
+        x_notmatch_d = Variable(x_notmatch_d).to(device)    
+        output = D1.forward(x_true_S0 ,x_true_mS0,x_notmatch_d)
 
         error_true = loss(output, fake_label) 
         error_true.backward()
@@ -103,7 +127,7 @@ for epoch in range(num_epochs):
 
         x_fake_S = S_tilde
         # x_fake_S = Variable(S_tilde).to(device)
-        mS_tilde = get_downsampled_batch(batch_size, S_tilde)
+        mS_tilde = down_sample.get_downsampled_batch(batch_size, S_tilde)
         x_fake_mS = Variable(mS_tilde).to(device)
         x_fake_d = Variable(d).to(device) 
         output = D1.forward(x_fake_S.detach(),x_fake_mS.detach(),x_fake_d.detach())
