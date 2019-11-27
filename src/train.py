@@ -14,8 +14,14 @@ cuda = torch.cuda.is_available()
 device = torch.device("cuda:0" if cuda else "cpu")
 X, y = None,None
 
-if os.path.isfile(os.path.dirname(__file__)+'../data/data.pickle'):
-    with open(os.path.dirname(__file__)+'../data/data.pickle') as handle:
+# release
+# if os.path.isfile(os.path.join(os.path.dirname(__file__),'..','data','data.pkl')):
+#     with open(os.path.join(os.path.dirname(__file__),'..','data','data.pkl')) as handle:
+#         X,y = pickle.load(handle)
+
+# debug
+if os.path.isfile(os.path.join(os.path.dirname(__file__),'..','data','debug_data.pkl')):
+    with open(os.path.join(os.path.dirname(__file__),'..','data','debug_data.pkl')) as handle:
         X,y = pickle.load(handle)
 else:
     X, y = data_loader.load_data()
@@ -33,7 +39,7 @@ test_loader  = DataLoader(testing_data, batch_size=batch_size, pin_memory=cuda)
 
 flatten_image_size = 128*128
 
-latent_dim_g2 = flatten_image_size + gausian_noise_size + human_attributes_size # 16492
+latent_dim_g2 = flatten_image_size + GANs.gausian_noise_size + GANs.human_attributes_size # 16492
 
 G1 = GANs.Generator1()
 D1 = GANs.Discriminator1()

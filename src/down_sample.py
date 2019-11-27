@@ -10,11 +10,11 @@ import os.path
 
 
 # Load segmented images
-segmented_images_raw_path = os.path.join(os.path.dirname(__file__),'../data/segmented_images.p')
-infile = open(segmented_images_raw_path,'rb')
-new_dict = pickle.load(infile)
-# Close the stream
-infile.close()
+# segmented_images_raw_path = os.path.join(os.path.dirname(__file__),'../data/segmented_images.p')
+# infile = open(segmented_images_raw_path,'rb')
+# new_dict = pickle.load(infile)
+# # Close the stream
+# infile.close()
 
 # Get next element from the dictionay
 

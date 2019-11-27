@@ -100,10 +100,10 @@ def construct_data(segmented_images,real_images,indeces,language,encoded_values)
     y['train'] = []
     y['test'] = []
 
-    length_to_iterate_train = len(indeces['train_ind'])
-    # length_to_iterate_train = 1000
-    length_to_iterate_test = len(indeces['test_ind'])
-    # length_to_iterate_test = 200
+    # length_to_iterate_train = len(indeces['train_ind'])
+    length_to_iterate_train = 1000
+    # length_to_iterate_test = len(indeces['test_ind'])
+    length_to_iterate_test = 200
 
 
     for i in range(length_to_iterate_train):
@@ -114,7 +114,7 @@ def construct_data(segmented_images,real_images,indeces,language,encoded_values)
         X['train']['cate_new'].append(language['cate_new'][idx][0])
         X['train']['description'].append(str(language['engJ'][idx][0][0]))
         X['train']['encoding'].append(encoded_values[idx])
-        #X['train']['segmented_image'].append(segmented_images[idx][0])
+        # X['train']['segmented_image'].append(segmented_images[idx])
         X['train']['segmented_image'].append(down_sample.get_segmented_image(segmented_images[idx]))  
         X['train']['codeJ'].append(str(language['codeJ'][idx][0][0]))
         skin_tone = apply_mask(np.reshape(segmented_images[idx],(128,128)),real_images[idx])
@@ -138,7 +138,7 @@ def construct_data(segmented_images,real_images,indeces,language,encoded_values)
         X['test']['description'].append(str(language['engJ'][idx][0][0]))
         X['test']['encoding'].append(encoded_values[idx])
         X['test']['segmented_image'].append(down_sample.get_segmented_image(segmented_images[idx]))  
-        #X['test']['segmented_image'].append(segmented_images[idx][0])
+        # X['test']['segmented_image'].append(segmented_images[idx])
         X['test']['codeJ'].append(str(language['codeJ'][idx][0][0]))
         skin_tone = apply_mask(np.reshape(segmented_images[idx],(128,128)),real_images[idx])
 
@@ -205,7 +205,7 @@ def load_data():
     (X,y) = construct_data(segmented_images,real_images,indeces,lang_org, encoded_values)
     print("Data constructed")
     print("Pickle the data")
-    handle = open(os.path.join(os.path.dirname(__file__),'..','data','data.pkl'),'wb')
+    handle = open(os.path.join(os.path.dirname(__file__),'..','data','debug_data.pkl'),'wb')
     pickle.dump((X,y), handle, protocol=pickle.HIGHEST_PROTOCOL)
     handle.close()
     
