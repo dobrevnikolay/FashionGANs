@@ -9,10 +9,6 @@ import os
 cuda = torch.cuda.is_available()
 device = torch.device("cuda:0" if cuda else "cpu")
 
-#todo: calculate the output size of each layer, foward, training loop
-# def one_hot(labels):
-#     y = torch.eye(len(classes)) 
-#     return y[labels]
 
 #sizes
 human_attributes_size = 17
@@ -22,10 +18,6 @@ gausian_noise_size = 100
 
 design_encoding = human_attributes_size + encoded_description_size + gausian_noise_size # 217
 
-
-class Flatten(nn.Module):
-    def forward(self, x):
-        return x.view(x.size(0), -1)
 
 class Generator1(nn.Module):
     def __init__(self):
@@ -111,6 +103,7 @@ class Discriminator1(nn.Module):
             nn.BatchNorm2d(1),
             nn.LeakyReLU(0.2),
         )
+        self.sigmoid = nn.Sigmoid()
 
     def forward(self, x_segmented_image,x_down_sampled, x_design_encoding):
         layer4 = self.D1_Layer1(x_segmented_image)
@@ -118,7 +111,10 @@ class Discriminator1(nn.Module):
         
         concatenated = torch.cat((layer4,x_down_sampled),1)
         layer5 = self.D1_concatenation(concatenated)
-        d_by_4 = x_design_encoding.repeat(1,4)
+        d_by_4 = x_design_encoding.repeat(1,16)
+        d_by_4 = d_by_4.view(layer5.shape[0],x_design_encoding.shape[1],4,4)
         input_for_layer6 = torch.cat((layer5,d_by_4),1)
-        return self.D1_LastLayers(input_for_layer6)
+        output = self.D1_LastLayers(input_for_layer6)
+        output = output.view(x_segmented_image.shape[0],1)
+        return self.sigmoid(output)
         

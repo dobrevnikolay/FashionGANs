@@ -80,12 +80,6 @@ for epoch in range(num_epochs):
         
         d, mS0, S0, label = data
         
-        
-        #flatten the downsampled image
-        # mS0 = mS0.view(batch_size, 64, 4)
-        # flatten the segmented image
-        # S0 = S0.view(batch_size, 16384, 7)  # 128 * 128 = 16384 
-        # True data is given label 1, while fake data is given label 0
         true_label = torch.ones(batch_size, 1).to(device)
         fake_label = torch.zeros(batch_size, 1).to(device)
         
@@ -115,13 +109,15 @@ for epoch in range(num_epochs):
         error_true = loss(output, fake_label) 
         error_true.backward()
 
-        # loss 3. generated fake image + real condition -> 0
-        z = torch.randn(batch_size, 100, 1, 1)
+        # loss 3. generated fake image + real condition -> 0s
+        # z = torch.randn(batch_size, 100, 1, 1,dtype=torch.float64)
+        z = torch.randn(batch_size, 100,dtype=torch.float64)
         dz = torch.cat([d, z] , dim=1)
+        dz = dz.view((batch_size,dz.shape[1],1,1))
         dz = Variable(dz).to(device)
         x_g_mS0 = Variable(mS0).to(device)
 
-        S_tilde = G1.foraward(dz,x_g_mS0)
+        S_tilde = G1.forward(dz,x_g_mS0)
 
         x_fake_S = S_tilde
         # x_fake_S = Variable(S_tilde).to(device)
