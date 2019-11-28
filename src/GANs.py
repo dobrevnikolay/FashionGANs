@@ -24,10 +24,10 @@ class Generator1(nn.Module):
         super(Generator1, self).__init__()
 
         self.G1_Layer2 = nn.Sequential(
-            nn.ConvTranspose2d(in_channels=design_encoding,out_channels=1024,kernel_size=4,stride=4),
+            nn.ConvTranspose2d(in_channels=design_encoding,out_channels=1024,kernel_size=4,stride=4,padding=0),
             nn.BatchNorm2d(1024),
             nn.ReLU(),
-            nn.ConvTranspose2d(in_channels=1024,out_channels=512,kernel_size=4,stride=2,padding=0),
+            nn.ConvTranspose2d(in_channels=1024,out_channels=512,kernel_size=4,stride=2,padding=1),
             nn.BatchNorm2d(512),
             nn.ReLU()
         )
@@ -57,8 +57,8 @@ class Generator1(nn.Module):
 
     def forward(self, x_design_desc, x_down_sampled_image):
         x_design = self.G1_Layer2(x_design_desc)
-        x_down_sampled = self.G1_Layer2(x_down_sampled_image)
-        concatenated = torch.cat((Flatten(x_design),Flatten(x_down_sampled)),0)
+        x_down_sampled = self.G1_A(x_down_sampled_image)
+        concatenated = torch.cat((x_design,x_down_sampled),1)
         return self.G1_LastLayers(concatenated)
 
         

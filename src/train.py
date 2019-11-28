@@ -114,8 +114,8 @@ for epoch in range(num_epochs):
         z = torch.randn(batch_size, 100,dtype=torch.float64)
         dz = torch.cat([d, z] , dim=1)
         dz = dz.view((batch_size,dz.shape[1],1,1))
-        dz = Variable(dz).to(device)
-        x_g_mS0 = Variable(mS0).to(device)
+        dz = Variable(dz).to(device,dtype=torch.float)
+        x_g_mS0 = Variable(mS0).to(device,dtype=torch.float)
 
         S_tilde = G1.forward(dz,x_g_mS0)
 
