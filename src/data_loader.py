@@ -19,6 +19,15 @@ real_images_raw_path = os.path.join(os.path.dirname(__file__),'..','data','real_
 h5_file_path = os.path.join(os.path.dirname(__file__),'..','data','G2.h5')
 lang_encoding = os.path.join(os.path.dirname(__file__),'..','data','encode.npy')
 
+def binary_representaiton(val, n_bits):
+    binary_str = bin(val)[2:]
+    while n_bits > len(binary_str):
+            binary_str = '0'+binary_str
+    arr =[]
+    for i in range(len(binary_str)):
+        arr.append(float(binary_str[i]))
+    return arr
+
 
 def create_mask_for_skin_tone(segmented_image):
     mask = copy.deepcopy(segmented_image)
@@ -44,21 +53,22 @@ class FashionData(Dataset):
     
     def __getitem__(self, index):
         design_encoding = []
-        design_encoding.append(self.X['gender'][index])
-        design_encoding.append(self.X['color'][index])
-        design_encoding.append(self.X['sleeve'][index])
-        design_encoding.append(self.X['cate_new'][index])
+        design_encoding.append(float(self.X['gender'][index]))
+        design_encoding.extend(binary_representaiton(self.X['color'][index],5))
+        design_encoding.extend(binary_representaiton(self.X['sleeve'][index],2))
+        design_encoding.extend(binary_representaiton(self.X['cate_new'][index],5))
         design_encoding.append(self.X['r'][index])
         design_encoding.append(self.X['g'][index])
         design_encoding.append(self.X['b'][index])
         design_encoding.append(self.X['y'][index])
-        design_encoding.append(self.X['encoding'][index])
+        design_encoding.extend(self.X['encoding'][index])
+        design_encoding = np.array(design_encoding)
 
         #return (self.X['segmented_image'][index],self.y[index])
         return (design_encoding,self.X['down_sampled_images'][index],self.X['segmented_image'][index],self.y[index])        
 
     def __len__(self):
-        return len(self.X)
+        return len(self.y)
 
     
 

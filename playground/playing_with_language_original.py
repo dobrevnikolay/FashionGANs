@@ -1,6 +1,7 @@
 import scipy.io
+import os
 
-lang_org = scipy.io.loadmat("../data/language_original.mat")
+lang_org = scipy.io.loadmat(os.path.join(os.path.dirname(__file__),'..','data','language_original.mat'))
 
 # gender 0 corresponds to female
 desc = lang_org['engJ']

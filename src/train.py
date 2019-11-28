@@ -8,6 +8,7 @@ import GANs
 import down_sample
 from torch.autograd import Variable
 import pickle
+import numpy as np
 
 
 cuda = torch.cuda.is_available()
@@ -20,9 +21,11 @@ X, y = None,None
 #         X,y = pickle.load(handle)
 
 # debug
+loaded_data = None
 if os.path.isfile(os.path.join(os.path.dirname(__file__),'..','data','debug_data.pkl')):
-    with open(os.path.join(os.path.dirname(__file__),'..','data','debug_data.pkl')) as handle:
-        X,y = pickle.load(handle)
+    with open(os.path.join(os.path.dirname(__file__),'..','data','debug_data.pkl'),'rb') as handle:
+        loaded_data = pickle.load(handle)
+        X,y = loaded_data[0],loaded_data[1]
 else:
     X, y = data_loader.load_data()
 training_data = data_loader.FashionData(X,y,'train')
@@ -43,6 +46,9 @@ latent_dim_g2 = flatten_image_size + GANs.gausian_noise_size + GANs.human_attrib
 
 G1 = GANs.Generator1()
 D1 = GANs.Discriminator1()
+if cuda:
+    G1.cuda()
+    D1.cuda()
 
 loss = torch.nn.BCELoss()
 print("Using device:", device)
@@ -71,24 +77,14 @@ for epoch in range(num_epochs):
     batch_d_loss, batch_g_loss = [], []
     
     for i , data in enumerate(train_loader, 0):
-        # X['d'],X['mS0'], X['S0'],y
-        # encoding
-        #d = data
-        batch_size = 13
+        
         d, mS0, S0, label = data
-        #batch_size = d.size()[0]
-        # we flatten d into one big vector
-        d_temp=[]
-        for i in range(len(d)):
-           for j in range(len(d[i])):
-              d_temp.append(d[i][j])
-
-        d = d_temp
+        
         
         #flatten the downsampled image
-        mS0 = mS0.view(batch_size, 64, 4)
+        # mS0 = mS0.view(batch_size, 64, 4)
         # flatten the segmented image
-        S0 = S0.view(batch_size, 16384, 7)  # 128 * 128 = 16384 
+        # S0 = S0.view(batch_size, 16384, 7)  # 128 * 128 = 16384 
         # True data is given label 1, while fake data is given label 0
         true_label = torch.ones(batch_size, 1).to(device)
         fake_label = torch.zeros(batch_size, 1).to(device)
@@ -100,9 +96,9 @@ for epoch in range(num_epochs):
         
         #################### Update D #############################
         # loss 1. real image + real condition -> 1
-        x_true_S0 = Variable(S0).to(device)
-        x_true_mS0 = Variable(mS0).to(device)
-        x_true_d = Variable(d).to(device)        
+        x_true_S0 = Variable(S0).to(device,dtype=torch.float)
+        x_true_mS0 = Variable(mS0).to(device,dtype=torch.float)
+        x_true_d = Variable(d).to(device,dtype=torch.float)        
         output = D1.forward(x_true_S0,x_true_mS0,x_true_d)
         
         error_true = loss(output, true_label) 
@@ -112,10 +108,6 @@ for epoch in range(num_epochs):
         # shuffle d     
         # shuffle the true d row wise
         x_notmatch_d = x_true_d[torch.randperm(x_true_d.size()[0])]
-
-        #we pass the same real image and segmented image and we shuffle the description to get wrong description
-        #x_notmatch_S0 = Variable(S0).to(device)
-        #x_notmatch_mS0 = Variable(mS0).to(device)
         
         x_notmatch_d = Variable(x_notmatch_d).to(device)    
         output = D1.forward(x_true_S0 ,x_true_mS0,x_notmatch_d)

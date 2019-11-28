@@ -15,12 +15,12 @@ device = torch.device("cuda:0" if cuda else "cpu")
 #     return y[labels]
 
 #sizes
-human_attributes_size = 8
+human_attributes_size = 17
 encoded_description_size = 100
 flatten_down_sampled_segmentations_size = 256
 gausian_noise_size = 100
 
-design_encoding = human_attributes_size + encoded_description_size + gausian_noise_size # 208
+design_encoding = human_attributes_size + encoded_description_size + gausian_noise_size # 217
 
 
 class Flatten(nn.Module):
@@ -89,10 +89,10 @@ class Discriminator1(nn.Module):
         )
 
         self.D1_condition = nn.Sequential(
-            nn.Conv2d(in_channels=4,out_channels=64,kernel_size=3,stride=2,padding=1),
+            nn.Conv2d(in_channels=4,out_channels=64,kernel_size=3,stride=1,padding=1),
             nn.BatchNorm2d(64),
             nn.LeakyReLU(0.2),
-            nn.Conv2d(in_channels=64,out_channels=128,kernel_size=3,stride=2,padding=1),
+            nn.Conv2d(in_channels=64,out_channels=128,kernel_size=3,stride=1,padding=1),
             nn.BatchNorm2d(128),
             nn.LeakyReLU(0.2),
         )
@@ -104,7 +104,7 @@ class Discriminator1(nn.Module):
         )
 
         self.D1_LastLayers = nn.Sequential(
-            nn.Conv2d(in_channels=1132,out_channels=1024,kernel_size=1,stride=1,padding=1),
+            nn.Conv2d(in_channels=1141,out_channels=1024,kernel_size=1,stride=1,padding=1),
             nn.BatchNorm2d(1024),
             nn.LeakyReLU(0.2),
             nn.Conv2d(in_channels=1024,out_channels=1,kernel_size=4,stride=4,padding=0),
@@ -115,8 +115,10 @@ class Discriminator1(nn.Module):
     def forward(self, x_segmented_image,x_down_sampled, x_design_encoding):
         layer4 = self.D1_Layer1(x_segmented_image)
         x_down_sampled = self.D1_condition(x_down_sampled)
-        layer5 = self.D1_concatenation(torch.cat((Flatten(layer4),Flatten(x_down_sampled)),0))
+        
+        concatenated = torch.cat((layer4,x_down_sampled),1)
+        layer5 = self.D1_concatenation(concatenated)
         d_by_4 = x_design_encoding.repeat(1,4)
-        input_for_layer6 = torch.cat((layer5,d_by_4),0)
+        input_for_layer6 = torch.cat((layer5,d_by_4),1)
         return self.D1_LastLayers(input_for_layer6)
         
