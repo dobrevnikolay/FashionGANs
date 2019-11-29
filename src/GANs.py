@@ -11,12 +11,12 @@ device = torch.device("cuda:0" if cuda else "cpu")
 
 
 #sizes
-human_attributes_size = 17
+human_attributes_size = 18
 encoded_description_size = 100
 flatten_down_sampled_segmentations_size = 256
 gausian_noise_size = 100
 
-design_encoding = human_attributes_size + encoded_description_size + gausian_noise_size # 217
+design_encoding = human_attributes_size + encoded_description_size + gausian_noise_size # 218
 
 
 class Generator1(nn.Module):

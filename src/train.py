@@ -9,6 +9,7 @@ import down_sample
 from torch.autograd import Variable
 import pickle
 import numpy as np
+from IPython.display import Image, display, clear_output
 
 
 cuda = torch.cuda.is_available()
@@ -153,41 +154,41 @@ for epoch in range(num_epochs):
     discriminator_loss.append(np.mean(batch_d_loss))
     generator_loss.append(np.mean(batch_g_loss))
     
-    # -- Plotting --
-    f, axarr = plt.subplots(1, 2, figsize=(18, 7))
+##################################
+    print('Training epoch %d: discriminator_loss = %.5f, generator_loss = %.5f' % (epoch, discriminator_loss[epoch].item(), generator_loss[epoch].item()))
 
-    # Loss
-    ax = axarr[0]
-    ax.set_xlabel('Epoch')
-    ax.set_ylabel('Loss')
 
-    ax.plot(np.arange(epoch+1), discriminator_loss)
-    ax.plot(np.arange(epoch+1), generator_loss, linestyle="--")
-    ax.legend(['Discriminator', 'Generator'])
-    
-    # Latent space samples
-    ax = axarr[1]
-    ax.set_title('Samples from generator')
-    ax.axis('off')
 
-    rows, columns = 8, 8
-    
-    # Generate data
-    with torch.no_grad():
-        z = torch.randn(rows*columns, latent_dim, 1, 1)
-        z = Variable(z, requires_grad=False).to(device)
-        x_fake = generator(z)
-    
-    canvas = np.zeros((28*rows, columns*28))
-    for i in range(rows):
-        for j in range(columns):
-            idx = i % columns + rows * j
-            canvas[i*28:(i+1)*28, j*28:(j+1)*28] = x_fake.data[idx].cpu().numpy()
-    ax.imshow(canvas, cmap='gray')
-    
-    plt.savefig(tmp_img)
-    plt.close(f)
-    display(Image(filename=tmp_img))
-    clear_output(wait=True)
+    # # -- Plotting --
+    # f, axarr = plt.subplots(1, 2, figsize=(18, 7))
 
-    os.remove(tmp_img)
+    # # Loss
+    # ax = axarr[0]
+    # ax.set_xlabel('Epoch')
+    # ax.set_ylabel('Loss')
+
+    # ax.plot(np.arange(epoch+1), discriminator_loss)
+    # ax.plot(np.arange(epoch+1), generator_loss, linestyle="--")
+    # ax.legend(['Discriminator', 'Generator'])
+    
+    
+    # # Generate data
+    # with torch.no_grad():
+    #     zsample = torch.randn(batch_size, 100,dtype=torch.float64)
+    #     dzsample = torch.cat([x['encoding'], z] , dim=1)
+    #     dz = dz.view((batch_size,dz.shape[1],1,1))
+    #     dz = Variable(dz).to(device,dtype=torch.float)
+    #     x_g_mS0 = Variable(mS0).to(device,dtype=torch.float)
+    #     z = torch.randn(1, 100, 1, 1)
+    #     z = Variable(z, requires_grad=False).to(device)
+    #     x_fake = G1(z)
+    
+    # canvas = x_fake.data.cpu().numpy()
+    # ax.imshow(canvas, cmap='gray')
+    
+    # plt.savefig(tmp_img)
+    # plt.close(f)
+    # display(Image(filename=tmp_img))
+    # clear_output(wait=True)
+
+    # os.remove(tmp_img)
