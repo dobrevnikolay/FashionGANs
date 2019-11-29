@@ -73,7 +73,7 @@ discriminator_1_optim = torch.optim.Adam(D1.parameters(), 2e-4, betas=(0.5, 0.99
 tmp_img = "tmp_gan_out.png"
 discriminator_loss, generator_loss = [], []
 
-num_epochs = 50
+num_epochs = 20
 for epoch in range(num_epochs):
     batch_d_loss, batch_g_loss = [], []
     
@@ -107,8 +107,8 @@ for epoch in range(num_epochs):
         x_notmatch_d = Variable(x_notmatch_d).to(device)    
         output = D1.forward(x_true_S0 ,x_true_mS0,x_notmatch_d)
 
-        error_true = loss(output, fake_label) 
-        error_true.backward()
+        error_notmatch = loss(output, fake_label) 
+        error_notmatch.backward()
 
         # loss 3. generated fake image + real condition -> 0s
         # z = torch.randn(batch_size, 100, 1, 1,dtype=torch.float64)
@@ -148,7 +148,8 @@ for epoch in range(num_epochs):
         error_generator.backward()
         generator_1_optim.step()
         
-        batch_d_loss.append((error_true/(error_true + error_fake)).item())
+        # batch_d_loss.append((error_true/(error_true + error_fake + error_notmatch)).item())
+        batch_d_loss.append((error_true + error_fake + error_notmatch).item())
         batch_g_loss.append(error_generator.item())
 
     discriminator_loss.append(np.mean(batch_d_loss))
@@ -172,19 +173,30 @@ for epoch in range(num_epochs):
     # ax.legend(['Discriminator', 'Generator'])
     
     
-    # # Generate data
-    # with torch.no_grad():
-    #     zsample = torch.randn(batch_size, 100,dtype=torch.float64)
-    #     dzsample = torch.cat([x['encoding'], z] , dim=1)
-    #     dz = dz.view((batch_size,dz.shape[1],1,1))
-    #     dz = Variable(dz).to(device,dtype=torch.float)
-    #     x_g_mS0 = Variable(mS0).to(device,dtype=torch.float)
-    #     z = torch.randn(1, 100, 1, 1)
-    #     z = Variable(z, requires_grad=False).to(device)
-    #     x_fake = G1(z)
+    # Generate data
+
+    with torch.no_grad():
+        zsample = torch.randn(100,dtype=torch.float64)
+        dsample = torch.from_numpy(X['train']['encoding'][0])
+        dzsample = torch.cat([dsample,zsample] , dim=1)
+        dzsample = dzsample.view((1,dzsample.shape[1],1,1))
+        dzsample = Variable(dzsample).to(device,dtype=torch.float)
+        mS0_sample = torch.from_numpy(X['train']['down_sampled_images'][0])
+        mS0_sample = Variable(mS0_sample).to(device,dtype=torch.float)
+        x_fake = G1.forward(dzsample,mS0_sample)
     
-    # canvas = x_fake.data.cpu().numpy()
-    # ax.imshow(canvas, cmap='gray')
+    fig = plt.figure()
+    S_tilde_sample = x_fake.data.cpu().numpy()
+    ax = fig.add_subplot(121)
+    ax.imshow(S_tilde_sample)
+
+    S_0_sample = X['train']['down_sampled_images'][0]
+    ax= fig.add_subplot(122)
+    aximshow(S_0_sample)
+    plt.show()
+
+
+
     
     # plt.savefig(tmp_img)
     # plt.close(f)
@@ -192,3 +204,7 @@ for epoch in range(num_epochs):
     # clear_output(wait=True)
 
     # os.remove(tmp_img)
+
+plt.plot(range(20), discriminator_loss)
+plt.plot(range(20), discriminator_loss)
+plt.show()
