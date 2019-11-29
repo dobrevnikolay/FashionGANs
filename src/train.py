@@ -10,6 +10,7 @@ from torch.autograd import Variable
 import pickle
 import numpy as np
 from IPython.display import Image, display, clear_output
+from data_loader import binary_representaiton
 
 
 cuda = torch.cuda.is_available()
@@ -23,6 +24,8 @@ X, y = None,None
 
 # debug
 loaded_data = None
+# if os.path.isfile(os.path.join(os.path.dirname(__file__),'..','data','debug_data_10k.pkl')):
+#     with open(os.path.join(os.path.dirname(__file__),'..','data','debug_data_10k.pkl'),'rb') as handle:
 if os.path.isfile(os.path.join(os.path.dirname(__file__),'..','data','debug_data.pkl')):
     with open(os.path.join(os.path.dirname(__file__),'..','data','debug_data.pkl'),'rb') as handle:
         loaded_data = pickle.load(handle)
@@ -32,7 +35,7 @@ else:
 training_data = data_loader.FashionData(X,y,'train')
 testing_data = data_loader.FashionData(X,y,'test')
 
-batch_size = 20
+batch_size = 50
 
 train_loader = DataLoader(training_data, batch_size=batch_size,pin_memory=cuda)
 test_loader  = DataLoader(testing_data, batch_size=batch_size, pin_memory=cuda)
@@ -73,7 +76,7 @@ discriminator_1_optim = torch.optim.Adam(D1.parameters(), 2e-4, betas=(0.5, 0.99
 tmp_img = "tmp_gan_out.png"
 discriminator_loss, generator_loss = [], []
 
-num_epochs = 20
+num_epochs = 5
 for epoch in range(num_epochs):
     batch_d_loss, batch_g_loss = [], []
     
@@ -177,34 +180,51 @@ for epoch in range(num_epochs):
 
     with torch.no_grad():
         zsample = torch.randn(100,dtype=torch.float64)
-        dsample = torch.from_numpy(X['train']['encoding'][0])
-        dzsample = torch.cat([dsample,zsample] , dim=1)
-        dzsample = dzsample.view((1,dzsample.shape[1],1,1))
+        dsample = []
+        dsample.append(float(X['train']['gender'][0]))
+        dsample.extend(binary_representaiton(X['train']['color'][0],5))
+        dsample.extend(binary_representaiton(X['train']['sleeve'][0],3))
+        dsample.extend(binary_representaiton(X['train']['cate_new'][0],5))
+        dsample.append(X['train']['r'][0])
+        dsample.append(X['train']['g'][0])
+        dsample.append(X['train']['b'][0])
+        dsample.append(X['train']['y'][0])
+        dsample.extend(X['train']['encoding'][0])
+        dsample = np.array(dsample)
+        dsample = torch.from_numpy(dsample)
+        dzsample = torch.cat([dsample,zsample] , dim=0)
+        dzsample = dzsample.view((1,dzsample.shape[0],1,1))
         dzsample = Variable(dzsample).to(device,dtype=torch.float)
-        mS0_sample = torch.from_numpy(X['train']['down_sampled_images'][0])
+        mS0_sample = X['train']['down_sampled_images'][0]
+        mS0_sample = mS0_sample.view((1,4,8,8))
         mS0_sample = Variable(mS0_sample).to(device,dtype=torch.float)
-        x_fake = G1.forward(dzsample,mS0_sample)
+        S_tilde_sample = G1.forward(dzsample,mS0_sample)
     
-    fig = plt.figure()
-    S_tilde_sample = x_fake.data.cpu().numpy()
-    ax = fig.add_subplot(121)
-    ax.imshow(S_tilde_sample)
-
-    S_0_sample = X['train']['down_sampled_images'][0]
-    ax= fig.add_subplot(122)
-    aximshow(S_0_sample)
-    plt.show()
 
 
-
-    
-    # plt.savefig(tmp_img)
-    # plt.close(f)
-    # display(Image(filename=tmp_img))
-    # clear_output(wait=True)
-
-    # os.remove(tmp_img)
-
-plt.plot(range(20), discriminator_loss)
-plt.plot(range(20), discriminator_loss)
+plt.plot(range(num_epochs), discriminator_loss)
 plt.show()
+plt.plot(range(num_epochs), generator_loss)
+plt.show()
+
+S_tilde_sample = S_tilde_sample.data.cpu().numpy()
+S_tilde_sample =  S_tilde_sample.reshape(7,128,128)
+fig = plt.figure()
+ax = fig.add_subplot(121)
+ax.imshow(S_tilde_sample[1])
+
+S_0_sample = X['train']['segmented_image'][0].data.cpu().numpy()
+S_0_sample =S_0_sample.reshape(7,128,128)
+ax= fig.add_subplot(122)
+ax.imshow(S_0_sample[1])
+plt.show()
+
+#######save_image#########
+
+
+# plt.savefig(tmp_img)
+# plt.close(f)
+# display(Image(filename=tmp_img))
+# clear_output(wait=True)
+
+# os.remove(tmp_img)
