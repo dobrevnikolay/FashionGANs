@@ -121,7 +121,8 @@ for epoch in range(num_epochs):
 
         x_fake_S = S_tilde
         # x_fake_S = Variable(S_tilde).to(device)
-        mS_tilde = down_sample.get_downsampled_batch(batch_size, S_tilde)
+        mS_tilde = down_sample.get_segmented_image_7_s_tilde(batch_size, S_tilde)
+        x_fake_mS = down_sample.get_downsampled_batch(batch_size, mS_tilde)
         x_fake_mS = Variable(mS_tilde).to(device)
         x_fake_d = Variable(d).to(device) 
         output = D1.forward(x_fake_S.detach(),x_fake_mS.detach(),x_fake_d.detach())

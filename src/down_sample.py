@@ -17,8 +17,21 @@ import os.path
 # infile.close()
 
 # Get next element from the dictionay
+# input = 7* 128 * 128
+# output 4 * 128 * 128
+def get_segmented_image_7_s_tilde(batch_size,s_tilde):
+    
+    img_no_downsample = s_tilde
+    #img_no_downsample_copy = copy.deepcopy(img_no_downsample)
+    #Create a tensor 4D, one dimention for each label [0,3]
+    img_3_layer_tensor = img_no_downsample[:,0:3,:,:]
+    # take the mean of the indecies > 2
+    img_4th_layer_tensor = torch.mean(img_no_downsample[:,4:,:,:], dim=1)
+    img_4th_layer_tensor = img_4th_layer_tensor.view(64,1,128,128)
+    img_4_layer_tensor = torch.cat([img_3_layer_tensor, img_4th_layer_tensor], dim = 1)
+    return img_4_layer_tensor
 
-def get_segmented_image(seg_img):
+def get_segmented_image_7(seg_img):
     img_no_downsample = seg_img
     img_no_downsample_copy = copy.deepcopy(img_no_downsample)
     #Create a tensor 4D, one dimention for each label [0,3]
@@ -51,13 +64,11 @@ def get_segmented_image(seg_img):
 
 
 
-def get_downsampled_image(img):
+def get_downsampled_image_4(img):
     img_no_downsample = img
+    img_no_downsample_copy = copy.deepcopy(img_no_downsample)
     # L´ : only use the first four lables. if label > 3, set label = 3
     img_no_downsample[img_no_downsample > 3] = 3
-    # copy
-    img_no_downsample_copy = copy.deepcopy(img_no_downsample)
-
     #Create a tensor 4D, one dimention for each label [0,3]
     img_4_lay_tensor = torch.zeros(4, 128, 128)
 
@@ -104,10 +115,18 @@ def plot_tensor_seg_image(t_img):
         plt.show()
 
 def get_downsampled_batch(batchsize,batch):
+    batch_np = batch.cpu().data.numpy()
     batch_down_sampled = torch.ones(batchsize, 4, 8,8)
     for i in range(batchsize):
-        batch_down_sampled[i]=get_downsampled_image(batch[i])
+        batch_down_sampled[i]=get_downsampled_image_4(batch_np[i])
     return batch_down_sampled
+
+def get_segmented_batch(batchsize,batch):
+    batch_np = batch.cpu().data.numpy()
+    batch_segmented = torch.ones(batchsize, 7, 128,128)
+    for i in range(batchsize):
+        batch_segmented[i]=get_segmented_image_7(batch_np[i])
+    return batch_segmented
 
 #print('start downsampling')
 #img = next(iter(new_dict))
