@@ -96,13 +96,19 @@ class Discriminator1(nn.Module):
         )
 
         self.D1_LastLayers = nn.Sequential(
-            nn.Conv2d(in_channels=1141,out_channels=1024,kernel_size=1,stride=1,padding=1),
+            nn.Conv2d(in_channels=1142,out_channels=1024,kernel_size=1,stride=1,padding=1),
             nn.BatchNorm2d(1024),
             nn.LeakyReLU(0.2),
             nn.Conv2d(in_channels=1024,out_channels=1,kernel_size=4,stride=4,padding=0),
             nn.BatchNorm2d(1),
             nn.LeakyReLU(0.2),
         )
+        self.a1 = nn.Conv2d(in_channels=1142,out_channels=1024,kernel_size=1,stride=1,padding=1)
+        self.a2 = nn.BatchNorm2d(1024)
+        self.a3 = nn.LeakyReLU(0.2)
+        self.a4 = nn.Conv2d(in_channels=1024,out_channels=1,kernel_size=4,stride=4,padding=0)
+        self.a5 = nn.BatchNorm2d(1)
+        self.a6 = nn.LeakyReLU(0.2)
         self.sigmoid = nn.Sigmoid()
 
     def forward(self, x_segmented_image,x_down_sampled, x_design_encoding):
@@ -115,6 +121,12 @@ class Discriminator1(nn.Module):
         d_by_4 = d_by_4.view(layer5.shape[0],x_design_encoding.shape[1],4,4)
         input_for_layer6 = torch.cat((layer5,d_by_4),1)
         output = self.D1_LastLayers(input_for_layer6)
+        # output = a1(input_for_layer6)
+        # output = a2(output)
+        # output = a3(output)
+        # output = a4(output)
+        # output = a5(output)
+        # output = a6(output)
         output = output.view(x_segmented_image.shape[0],1)
         return self.sigmoid(output)
         

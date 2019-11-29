@@ -55,7 +55,7 @@ class FashionData(Dataset):
         design_encoding = []
         design_encoding.append(float(self.X['gender'][index]))
         design_encoding.extend(binary_representaiton(self.X['color'][index],5))
-        design_encoding.extend(binary_representaiton(self.X['sleeve'][index],2))
+        design_encoding.extend(binary_representaiton(self.X['sleeve'][index],3))
         design_encoding.extend(binary_representaiton(self.X['cate_new'][index],5))
         design_encoding.append(self.X['r'][index])
         design_encoding.append(self.X['g'][index])

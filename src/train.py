@@ -31,7 +31,7 @@ else:
 training_data = data_loader.FashionData(X,y,'train')
 testing_data = data_loader.FashionData(X,y,'test')
 
-batch_size = 64
+batch_size = 20
 
 train_loader = DataLoader(training_data, batch_size=batch_size,pin_memory=cuda)
 test_loader  = DataLoader(testing_data, batch_size=batch_size, pin_memory=cuda)

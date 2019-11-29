@@ -27,7 +27,7 @@ def get_segmented_image_7_s_tilde(batch_size,s_tilde):
     img_3_layer_tensor = img_no_downsample[:,0:3,:,:]
     # take the mean of the indecies > 2
     img_4th_layer_tensor = torch.mean(img_no_downsample[:,4:,:,:], dim=1)
-    img_4th_layer_tensor = img_4th_layer_tensor.view(64,1,128,128)
+    img_4th_layer_tensor = img_4th_layer_tensor.view(batch_size,1,128,128)
     img_4_layer_tensor = torch.cat([img_3_layer_tensor, img_4th_layer_tensor], dim = 1)
     return img_4_layer_tensor
 
