@@ -100,6 +100,16 @@ def get_downsampled_image_4(img):
         
     return img_4_lay_tensor
 
+def get_downsampled_image_4_mS0(batch_size,img):
+    img_no_downsample = img
+
+    img_4_lay_tensor = torch.nn.functional.interpolate(img_no_downsample, scale_factor=(0.0625, 0.0625),  mode='bicubic', align_corners=True)
+
+    img_4_lay_tensor = img_4_lay_tensor.resize(batch_size,4,8,8)
+    #img_4_lay_tensor = img_4_lay_tensor.permute(0,2,1)
+        
+    return img_4_lay_tensor
+
 
 def plot_tensor_image(t_img):
     for i in range(len(t_img)):
