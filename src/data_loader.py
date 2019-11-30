@@ -111,9 +111,9 @@ def construct_data(segmented_images,real_images,indeces,language,encoded_values)
     y['test'] = []
 
     # length_to_iterate_train = len(indeces['train_ind'])
-    length_to_iterate_train = 1000
+    length_to_iterate_train = 10000
     # length_to_iterate_test = len(indeces['test_ind'])
-    length_to_iterate_test = 200
+    length_to_iterate_test = 1000
 
 
     for i in range(length_to_iterate_train):

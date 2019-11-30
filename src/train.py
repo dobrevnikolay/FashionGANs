@@ -1,5 +1,4 @@
 import data_loader
-# import language_encoder
 from torch.utils.data import DataLoader
 import os
 from matplotlib import pyplot as plt
@@ -9,8 +8,7 @@ import down_sample
 from torch.autograd import Variable
 import pickle
 import numpy as np
-from IPython.display import Image, display, clear_output
-from data_loader import binary_representaiton
+from IPython.display import display, clear_output
 
 
 cuda = torch.cuda.is_available()
@@ -39,10 +37,6 @@ batch_size = 50
 
 train_loader = DataLoader(training_data, batch_size=batch_size,pin_memory=cuda)
 test_loader  = DataLoader(testing_data, batch_size=batch_size, pin_memory=cuda)
-
-
-
-
 
 flatten_image_size = 128*128
 
@@ -161,30 +155,16 @@ for epoch in range(num_epochs):
 ##################################
     print('Training epoch %d: discriminator_loss = %.5f, generator_loss = %.5f' % (epoch, discriminator_loss[epoch].item(), generator_loss[epoch].item()))
 
-
-
-    # # -- Plotting --
-    # f, axarr = plt.subplots(1, 2, figsize=(18, 7))
-
-    # # Loss
-    # ax = axarr[0]
-    # ax.set_xlabel('Epoch')
-    # ax.set_ylabel('Loss')
-
-    # ax.plot(np.arange(epoch+1), discriminator_loss)
-    # ax.plot(np.arange(epoch+1), generator_loss, linestyle="--")
-    # ax.legend(['Discriminator', 'Generator'])
-    
-    
+s   
     # Generate data
 
     with torch.no_grad():
         zsample = torch.randn(100,dtype=torch.float64)
         dsample = []
         dsample.append(float(X['train']['gender'][0]))
-        dsample.extend(binary_representaiton(X['train']['color'][0],5))
-        dsample.extend(binary_representaiton(X['train']['sleeve'][0],3))
-        dsample.extend(binary_representaiton(X['train']['cate_new'][0],5))
+        dsample.extend(data_loader.binary_representaiton(X['train']['color'][0],5))
+        dsample.extend(data_loader.binary_representaiton(X['train']['sleeve'][0],3))
+        dsample.extend(data_loader.binary_representaiton(X['train']['cate_new'][0],5))
         dsample.append(X['train']['r'][0])
         dsample.append(X['train']['g'][0])
         dsample.append(X['train']['b'][0])

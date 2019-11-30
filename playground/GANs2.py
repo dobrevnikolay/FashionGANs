@@ -15,7 +15,7 @@ def one_hot(labels):
 
 class G1(nn.Module):
     def __init__(self):
-        super(Net, self).__init__()
+        super(G1, self).__init__()
 
         self.G1_1 = nn.ConvTranspose2d(in_channels =150, out_channels =1024, kernel_size=4, stride=4)
         self.G1_1_B = nn.BatchNorm2d(1024)

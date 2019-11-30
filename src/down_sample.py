@@ -1,5 +1,4 @@
-from PIL import Image
-import torchvision.transforms.functional as TF
+
 import matplotlib.pyplot as plt
 import pickle
 import numpy as np
@@ -62,8 +61,6 @@ def get_segmented_image_7(seg_img):
         
     return img_7_lay_tensor
 
-
-
 def get_downsampled_image_4(img):
     img_no_downsample = img
     img_no_downsample_copy = copy.deepcopy(img_no_downsample)
@@ -71,7 +68,6 @@ def get_downsampled_image_4(img):
     img_no_downsample[img_no_downsample > 3] = 3
     #Create a tensor 4D, one dimention for each label [0,3]
     img_4_lay_tensor = torch.zeros(4, 128, 128)
-
 
     for i in range(0,4):
         # first set the value when the index != label to a dummy value = 4
