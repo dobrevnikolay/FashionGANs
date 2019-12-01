@@ -136,10 +136,10 @@ def get_segmented_batch(batchsize,batch):
 
 def get_segmented_image_1(batch_size,segimg_7):
     seg_img_7 = copy.deepcopy(segimg_7)
-    seg_img_1 = torch.zeros(batch_size,128,128)
+    seg_img_1 = torch.zeros(batch_size,128,128).type(torch.float64)
     for i in range(batch_size):
         for j in range(7):
-            seg_img_1[i]=seg_img_1[i]+(j+1)*seg_img_7[i][j]
+            seg_img_1[i]=seg_img_1[i]+j*seg_img_7[i][j]
     return seg_img_1
 #print('start downsampling')
 #img = next(iter(new_dict))

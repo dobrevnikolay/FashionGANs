@@ -38,9 +38,9 @@ batch_size = 50
 train_loader = DataLoader(training_data, batch_size=batch_size,pin_memory=cuda)
 test_loader  = DataLoader(testing_data, batch_size=batch_size, pin_memory=cuda)
 
-# flatten_image_size = 128*128
+flatten_image_size = 128*128
 
-# latent_dim_g2 = flatten_image_size + GANs.gausian_noise_size + GANs.human_attributes_size # 16492
+latent_dim_g2 = flatten_image_size + GANs.gausian_noise_size + GANs.human_attributes_size # 16492
 
 G1 = GANs.Generator1()
 D1 = GANs.Discriminator1()
@@ -57,11 +57,21 @@ discriminator_1_optim = torch.optim.Adam(D1.parameters(), 0.0002, betas=(0.5, 0.
 
 
 
-
+# S0: segmented image
+# mS0: downsampled segmented image
+# d: designed encoding
+# dz: {d,z} encoding and noise
+# y: real image
+#TODO assign data to these variables above
+#TODO whether create variables for each step or just once?
+#TODO should batch works?
+#TODO debug the language encoder function
+#TODO encode all data or run encoder during training
+#TODO whether need to add condition loss in updating G2?
 tmp_img = "tmp_gan_out.png"
 discriminator_loss, generator_loss = [], []
 
-num_epochs = 50
+num_epochs = 20
 for epoch in range(num_epochs):
     batch_d_loss, batch_g_loss = [], []
     
@@ -78,51 +88,7 @@ for epoch in range(num_epochs):
         
         
         #################### Update D #############################
-        # # loss 1. real image + real condition -> 1
-        # x_true_S0 = Variable(S0).to(device,dtype=torch.float)
-        # x_true_mS0 = Variable(mS0).to(device,dtype=torch.float)
-        # x_true_d = Variable(d).to(device,dtype=torch.float)        
-        # output = D1.forward(x_true_S0,x_true_mS0,x_true_d)
-        
-        # error_true = loss(output, true_label) 
-        # error_true.backward()
-
-        # # loss 2. sampled real image + wrong condition -> 0
-        # # shuffle d     
-        # # shuffle the true d row wise
-        # x_notmatch_d = x_true_d[torch.randperm(x_true_d.size()[0])]
-        
-        # x_notmatch_d = Variable(x_notmatch_d).to(device)    
-        # output = D1.forward(x_true_S0 ,x_true_mS0,x_notmatch_d)
-
-        # error_notmatch = 0.2*loss(output, fake_label) 
-        # error_notmatch.backward()
-
-        # # loss 3. generated fake image + real condition -> 0s
-        # # z = torch.randn(batch_size, 100, 1, 1,dtype=torch.float64)
-        # z = torch.randn(batch_size, 100,dtype=torch.float64)
-        # dz = torch.cat([d, z] , dim=1)
-        # dz = dz.view((batch_size,dz.shape[1],1,1))
-        # dz = Variable(dz).to(device,dtype=torch.float)
-        # x_g_mS0 = Variable(mS0).to(device,dtype=torch.float)
-
-        # S_tilde = G1.forward(dz,x_g_mS0)
-
-        # x_fake_S = S_tilde
-        # # x_fake_S = Variable(S_tilde).to(device)
-        # mS_tilde = down_sample.get_segmented_image_7_s_tilde(batch_size, S_tilde)
-        # x_fake_mS = down_sample.get_downsampled_image_4_mS0(batch_size, mS_tilde)
-        # x_fake_mS = Variable(x_fake_mS).to(device,dtype=torch.float)
-        # x_fake_d = Variable(d).to(device,dtype=torch.float) 
-        # output = D1.forward(x_fake_S.detach(),x_fake_mS.detach(),x_fake_d.detach())
-        
-
-        # error_fake = 0.8*loss(output, fake_label)#log(1-log(g(z)))
-        # error_fake.backward()
-
-        # discriminator_1_optim.step()
-#####test######
-                # loss 1. real image + real condition -> 1
+        # loss 1. real image + real condition -> 1
         x_true_S0 = Variable(S0).to(device,dtype=torch.float)
         x_true_mS0 = Variable(mS0).to(device,dtype=torch.float)
         x_true_d = Variable(d).to(device,dtype=torch.float)        
@@ -135,12 +101,11 @@ for epoch in range(num_epochs):
         # shuffle d     
         # shuffle the true d row wise
         x_notmatch_d = x_true_d[torch.randperm(x_true_d.size()[0])]
-        x_true_S0_ = Variable(S0).to(device,dtype=torch.float)
-        x_true_mS0_ = Variable(mS0).to(device,dtype=torch.float)
+        
         x_notmatch_d = Variable(x_notmatch_d).to(device)    
-        output = D1.forward(x_true_S0_ ,x_true_mS0,x_notmatch_d)
+        output = D1.forward(x_true_S0 ,x_true_mS0,x_notmatch_d)
 
-        error_notmatch = 0.2*loss(output, fake_label) 
+        error_notmatch = loss(output, fake_label) 
         error_notmatch.backward()
 
         # loss 3. generated fake image + real condition -> 0s
@@ -162,10 +127,10 @@ for epoch in range(num_epochs):
         output = D1.forward(x_fake_S.detach(),x_fake_mS.detach(),x_fake_d.detach())
         
 
-        error_fake = 0.8*loss(output, fake_label)#log(1-log(g(z)))
+        error_fake = loss(output, fake_label)#log(1-log(g(z)))
         error_fake.backward()
-
         discriminator_1_optim.step()
+
             
         G1.zero_grad()
         
@@ -194,10 +159,8 @@ for epoch in range(num_epochs):
     
 ##################################
     print('Training epoch %d: discriminator_loss = %.5f, generator_loss = %.5f' % (epoch, discriminator_loss[epoch].item(), generator_loss[epoch].item()))
-
-
+   
     # Generate data
-
     with torch.no_grad():
         zsample = torch.randn(100,dtype=torch.float64)
         dsample = []
@@ -228,15 +191,17 @@ plt.plot(range(num_epochs), generator_loss)
 plt.show()
 
 S_tilde_sample = S_tilde_sample.data.cpu().numpy()
-S_tilde_sample =  S_tilde_sample.reshape(7,128,128)
-fig = plt.figure()
-ax = fig.add_subplot(121)
-ax.imshow(S_tilde_sample[1])
+# S_0_sample = X['train']['segmented_image'][0].data.cpu().numpy()
+# S_0_sample = down_sample.get_segmented_image_7_s_tilde(X['train']['segmented_image'][0])
+S_0_sample = X['train']['segmented_image'][0]
 
-S_0_sample = X['train']['segmented_image'][0].data.cpu().numpy()
+S_tilde_sample =  S_tilde_sample.reshape(7,128,128)
 S_0_sample =S_0_sample.reshape(7,128,128)
-ax= fig.add_subplot(122)
-ax.imshow(S_0_sample[1])
+fig, ax = plt.subplots(nrows=7, ncols=2)#,figsize=(15,15))
+for row_index, row in enumerate(ax,0):
+    row[0].imshow(S_tilde_sample[row_index])
+    row[1].imshow(S_0_sample[row_index])
+
 plt.show()
 
 #######save_image#########

@@ -50,7 +50,6 @@ class Generator1(nn.Module):
             nn.BatchNorm2d(64),
             nn.ReLU(),
             nn.ConvTranspose2d(in_channels=64,out_channels=7,kernel_size=4,stride=2,padding=1),
-            # nn.Softmax()
             nn.LogSoftmax(dim=1)
         )
 
