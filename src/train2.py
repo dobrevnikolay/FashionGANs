@@ -182,12 +182,12 @@ I_tilde_sample = I_tilde_sample.data.cpu().numpy()
 I_tilde_sample =  I_tilde_sample.reshape(128,128,3)
 fig = plt.figure()
 ax = fig.add_subplot(121)
-ax.imshow(I_tilde_sample)
+ax.imshow((I_tilde_sample * 255).astype('uint8'))
 
 I_0_sample = label[0].data.cpu().numpy()
 I_0_sample =I_0_sample.reshape(128,128,3)
 ax= fig.add_subplot(122)
-ax.imshow(I_0_sample[1])
+ax.imshow((I_0_sample[1] * 255).astype('uint8'))
 plt.show()
 
 #######save_image#########
