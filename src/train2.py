@@ -60,7 +60,7 @@ discriminator_2_optim = torch.optim.Adam(D2.parameters(), 0.0002, betas=(0.5, 0.
 tmp_img = "tmp_gan_out.png"
 discriminator_2_loss, generator_2_loss = [], []
 
-num_epochs = 25
+num_epochs = 1
 for epoch in range(num_epochs):
     batch_d_loss, batch_g_loss = [], []
     
@@ -68,8 +68,8 @@ for epoch in range(num_epochs):
         #need: I0:original image
         d, mS0, S0, label = data
         
-        true_label = torch.ones(batch_size, 1).to(device)
-        fake_label = torch.zeros(batch_size, 1).to(device)
+        true_label = torch.ones(batch_size, 1,1,1).to(device)
+        fake_label = torch.zeros(batch_size, 1,1,1).to(device)
         
         D2.zero_grad()
         
@@ -179,13 +179,13 @@ plt.plot(range(num_epochs), generator_2_loss)
 plt.show()
 
 I_tilde_sample = I_tilde_sample.data.cpu().numpy()
-I_tilde_sample =  I_tilde_sample.reshape(7,128,128)
+I_tilde_sample =  I_tilde_sample.reshape(128,128,3)
 fig = plt.figure()
 ax = fig.add_subplot(121)
-ax.imshow(label[1])
+ax.imshow(I_tilde_sample)
 
-I_0_sample = label['train'][0].data.cpu().numpy()
-I_0_sample =I_0_sample.reshape(7,128,128)
+I_0_sample = label[0].data.cpu().numpy()
+I_0_sample =I_0_sample.reshape(128,128,3)
 ax= fig.add_subplot(122)
 ax.imshow(I_0_sample[1])
 plt.show()
