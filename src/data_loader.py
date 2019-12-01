@@ -70,7 +70,7 @@ class FashionData(Dataset):
     def __len__(self):
         return len(self.y)
 
-    
+
 
 # should we normalize the real_images
 def construct_data(segmented_images,real_images,indeces,language,encoded_values):
@@ -220,3 +220,4 @@ def load_data():
     handle.close()
     
     return (X,y)
+

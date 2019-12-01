@@ -50,8 +50,7 @@ class Generator1(nn.Module):
             nn.BatchNorm2d(64),
             nn.ReLU(),
             nn.ConvTranspose2d(in_channels=64,out_channels=7,kernel_size=4,stride=2,padding=1),
-            # nn.Softmax()
-            nn.LogSoftmax()
+            nn.LogSoftmax(dim=1)
         )
 
     def forward(self, x_design_desc, x_down_sampled_image):
@@ -62,7 +61,7 @@ class Generator1(nn.Module):
 
 class Generator2(nn.Module):
     def __init__(self):
-        super().__init__()
+        super(Generator2,self).__init__()
         self.G2_Layer3 = nn.Sequential(
             nn.ConvTranspose2d(in_channels=design_encoding,out_channels=1024,kernel_size=4,stride=4,padding=0),
             nn.BatchNorm2d(1024),
@@ -166,7 +165,7 @@ class Discriminator1(nn.Module):
 
 class Discriminator2(nn.Module):
     def __init__(self):
-        super(self).__init__()
+        super(Discriminator2,self).__init__()
         self.D2_Layer3 = nn.Sequential(
             nn.Conv2d(in_channels=3, out_channels=64, kernel_size=4, stride=2, padding=1),
             nn.LeakyReLU(0.2),
@@ -213,9 +212,12 @@ class Discriminator2(nn.Module):
     def forward(self, design_encoding, g2_output, s_tilde):
         l3 = self.D2_Layer3(g2_output)
         lc = self.D2_LayerC(s_tilde)
-        concatenated = torch.cat((l3.lc),dim=1)
+        concatenated = torch.cat((l3,lc),dim=1)
         l5 = self.D2_Layer5(concatenated)
-        l7 = self.D2_Layer7(l5)
+        d_by_4 = design_encoding.repeat(1,16)
+        d_by_4 = d_by_4.view(l5.shape[0],design_encoding.shape[1],4,4)
+        input_for_l7 = torch.cat((l5,d_by_4),1)
+        l7 = self.D2_Layer7(input_for_l7)
         return self.sigmoid(l7)
 
 

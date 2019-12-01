@@ -1,0 +1,3 @@
+1.LogSoftmax+NNNL+sum_gen_loss
+2.more epoch
+3.0.8*fake_loss+0.2*nonmatch_loss
