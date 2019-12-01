@@ -19,7 +19,7 @@ design_encoding = human_attributes_size + encoded_description_size + gausian_noi
 
 class Generator1(nn.Module):
     def __init__(self):
-        super(self).__init__()
+        super(Generator1,self).__init__()
 
         self.G1_Layer2 = nn.Sequential(
             nn.ConvTranspose2d(in_channels=design_encoding,out_channels=1024,kernel_size=4,stride=4,padding=0),
@@ -50,7 +50,8 @@ class Generator1(nn.Module):
             nn.BatchNorm2d(64),
             nn.ReLU(),
             nn.ConvTranspose2d(in_channels=64,out_channels=7,kernel_size=4,stride=2,padding=1),
-            nn.Softmax()
+            # nn.Softmax()
+            nn.LogSoftmax(dim=1)
         )
 
     def forward(self, x_design_desc, x_down_sampled_image):
@@ -107,7 +108,7 @@ class Generator2(nn.Module):
 
 class Discriminator1(nn.Module):
     def __init__(self):
-        super(self).__init__()
+        super(Discriminator1,self).__init__()
 
         self.D1_Layer1 = nn.Sequential(
             nn.Conv2d(in_channels=7,out_channels=64,kernel_size=4,stride=2,padding=1),

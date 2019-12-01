@@ -48,11 +48,12 @@ if cuda:
     G1.cuda()
     D1.cuda()
 
+loss_seg = torch.nn.NLLLoss()
 loss = torch.nn.BCELoss()
 print("Using device:", device)
 
-generator_1_optim = torch.optim.Adam(G1.parameters(), 2e-4, betas=(0.5, 0.999))
-discriminator_1_optim = torch.optim.Adam(D1.parameters(), 2e-4, betas=(0.5, 0.999))
+generator_1_optim = torch.optim.Adam(G1.parameters(), 0.0002, betas=(0.5, 0.999))
+discriminator_1_optim = torch.optim.Adam(D1.parameters(), 0.0002, betas=(0.5, 0.999))
 
 
 
@@ -70,7 +71,7 @@ discriminator_1_optim = torch.optim.Adam(D1.parameters(), 2e-4, betas=(0.5, 0.99
 tmp_img = "tmp_gan_out.png"
 discriminator_loss, generator_loss = [], []
 
-num_epochs = 5
+num_epochs = 50
 for epoch in range(num_epochs):
     batch_d_loss, batch_g_loss = [], []
     
@@ -82,7 +83,7 @@ for epoch in range(num_epochs):
         fake_label = torch.zeros(batch_size, 1).to(device)
         
         D1.zero_grad()
-        G1.zero_grad()
+        
 
         
         
@@ -131,7 +132,7 @@ for epoch in range(num_epochs):
         discriminator_1_optim.step()
 
             
-        
+        G1.zero_grad()
         
         #################### Update G #############################
         
@@ -140,8 +141,12 @@ for epoch in range(num_epochs):
         #         propagate the error of the generator and
         #         update G weights.
         output = D1.forward(x_fake_S,x_fake_mS,x_fake_d)
-        
-        error_generator = loss(output, true_label)
+        target = Variable(down_sample.get_segmented_image_1(batch_size,S0)).to(device,dtype=torch.long)
+        error_D = loss(output, true_label)
+        # error_D.backward()
+        error_seg = 50*loss_seg(x_fake_S,target)
+        # error_seg.backward
+        error_generator = error_seg + error_D
         error_generator.backward()
         generator_1_optim.step()
         
@@ -155,7 +160,7 @@ for epoch in range(num_epochs):
 ##################################
     print('Training epoch %d: discriminator_loss = %.5f, generator_loss = %.5f' % (epoch, discriminator_loss[epoch].item(), generator_loss[epoch].item()))
 
-s   
+
     # Generate data
 
     with torch.no_grad():
