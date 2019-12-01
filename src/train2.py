@@ -57,7 +57,6 @@ discriminator_2_optim = torch.optim.Adam(D2.parameters(), 0.0002, betas=(0.5, 0.
 
 
 
-tmp_img = "tmp_gan_out.png"
 discriminator_2_loss, generator_2_loss = [], []
 
 num_epochs = 1

@@ -8,7 +8,6 @@ import down_sample
 from torch.autograd import Variable
 import pickle
 import numpy as np
-from IPython.display import display, clear_output
 
 
 cuda = torch.cuda.is_available()
@@ -68,7 +67,6 @@ discriminator_1_optim = torch.optim.Adam(D1.parameters(), 0.0002, betas=(0.5, 0.
 #TODO debug the language encoder function
 #TODO encode all data or run encoder during training
 #TODO whether need to add condition loss in updating G2?
-tmp_img = "tmp_gan_out.png"
 discriminator_loss, generator_loss = [], []
 
 num_epochs = 20

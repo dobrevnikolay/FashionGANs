@@ -1,10 +1,5 @@
 import torch
 import torch.nn as nn
-import numpy as np
-from torch.utils.data.sampler import SubsetRandomSampler
-from torchvision.transforms import ToTensor
-from torch.autograd import Variable
-import os
 
 
 #sizes

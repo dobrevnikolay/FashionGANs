@@ -1,23 +1,11 @@
 
 import matplotlib.pyplot as plt
-import pickle
 import numpy as np
 import torch
 import copy
 import os.path
 
 
-
-# Load segmented images
-# segmented_images_raw_path = os.path.join(os.path.dirname(__file__),'../data/segmented_images.p')
-# infile = open(segmented_images_raw_path,'rb')
-# new_dict = pickle.load(infile)
-# # Close the stream
-# infile.close()
-
-# Get next element from the dictionay
-# input = 7* 128 * 128
-# output 4 * 128 * 128
 def get_segmented_image_7_s_tilde(batch_size,s_tilde):
     
     img_no_downsample = s_tilde
