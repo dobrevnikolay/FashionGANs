@@ -24,8 +24,8 @@ X, y = None,None
 loaded_data = None
 # if os.path.isfile(os.path.join(os.path.dirname(__file__),'..','data','debug_data_10k.pkl')):
 #     with open(os.path.join(os.path.dirname(__file__),'..','data','debug_data_10k.pkl'),'rb') as handle:
-if os.path.isfile(os.path.join(os.path.dirname(__file__),'..','data','debug_data.pkl')):
-    with open(os.path.join(os.path.dirname(__file__),'..','data','debug_data.pkl'),'rb') as handle:
+if os.path.isfile(os.path.join(os.path.dirname(__file__),'..','data','debug_data_1k.pkl')):
+    with open(os.path.join(os.path.dirname(__file__),'..','data','debug_data_1k.pkl'),'rb') as handle:
         loaded_data = pickle.load(handle)
         X,y = loaded_data[0],loaded_data[1]
 else:
@@ -33,7 +33,7 @@ else:
 training_data = data_loader.FashionData(X,y,'train')
 testing_data = data_loader.FashionData(X,y,'test')
 
-batch_size = 50
+batch_size = 2
 
 train_loader = DataLoader(training_data, batch_size=batch_size,pin_memory=cuda)
 test_loader  = DataLoader(testing_data, batch_size=batch_size, pin_memory=cuda)
@@ -178,16 +178,23 @@ plt.plot(range(num_epochs), generator_2_loss)
 plt.show()
 
 I_tilde_sample = I_tilde_sample.data.cpu().numpy()
-I_tilde_sample =  I_tilde_sample.reshape(128,128,3)
+I_tilde_sample =  I_tilde_sample.reshape(3,128,128)
+I_tilde_sample = torch.from_numpy(I_tilde_sample)
+I_tilde_sample = I_tilde_sample.permute(2,1,0)
 fig = plt.figure()
 ax = fig.add_subplot(121)
-ax.imshow((I_tilde_sample * 255).astype('uint8'))
+ax.imshow(I_tilde_sample)
+ax.set_title("Generated")
 
-I_0_sample = label[0].data.cpu().numpy()
-I_0_sample =I_0_sample.reshape(128,128,3)
+I_0_sample = y['test'][0]
+I_0_sample = torch.from_numpy(I_0_sample)
+I_0_sample = I_0_sample.permute(2,1,0)
 ax= fig.add_subplot(122)
-ax.imshow((I_0_sample[1] * 255).astype('uint8'))
+ax.imshow(I_0_sample)
+ax.set_title("Original")
 plt.show()
+
+
 
 #######save_image#########
 
