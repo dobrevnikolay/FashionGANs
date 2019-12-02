@@ -8,7 +8,7 @@ import down_sample
 from torch.autograd import Variable
 import pickle
 import numpy as np
-
+from torch.optim.lr_scheduler import LambdaLR
 
 cuda = torch.cuda.is_available()
 device = torch.device("cuda:0" if cuda else "cpu")
@@ -23,8 +23,8 @@ X, y = None,None
 loaded_data = None
 # if os.path.isfile(os.path.join(os.path.dirname(__file__),'..','data','debug_data_10k.pkl')):
 #     with open(os.path.join(os.path.dirname(__file__),'..','data','debug_data_10k.pkl'),'rb') as handle:
-if os.path.isfile(os.path.join(os.path.dirname(__file__),'..','data','debug_data.pkl')):
-    with open(os.path.join(os.path.dirname(__file__),'..','data','debug_data.pkl'),'rb') as handle:
+if os.path.isfile(os.path.join(os.path.dirname(__file__),'..','data','debug_data_1k.pkl')):
+    with open(os.path.join(os.path.dirname(__file__),'..','data','debug_data_1k.pkl'),'rb') as handle:
         loaded_data = pickle.load(handle)
         X,y = loaded_data[0],loaded_data[1]
 else:
@@ -51,9 +51,15 @@ loss_seg = torch.nn.NLLLoss()
 loss = torch.nn.BCELoss()
 print("Using device:", device)
 
-generator_1_optim = torch.optim.Adam(G1.parameters(), 0.0002, betas=(0.5, 0.999))
-discriminator_1_optim = torch.optim.Adam(D1.parameters(), 0.0002, betas=(0.5, 0.999))
 
+generator_1_optim = torch.optim.Adam(G1.parameters(), 0.02, betas=(0.5, 0.999))
+discriminator_1_optim = torch.optim.Adam(D1.parameters(), 0.02, betas=(0.5, 0.999))
+
+num_epochs = 2
+
+decay = lambda global_step : np.linspace(1,0,num_epochs+1)[global_step]
+scheduler_gen = LambdaLR(generator_1_optim, decay)
+scheduler_disc = LambdaLR(discriminator_1_optim, decay)
 
 
 # S0: segmented image
@@ -69,7 +75,6 @@ discriminator_1_optim = torch.optim.Adam(D1.parameters(), 0.0002, betas=(0.5, 0.
 #TODO whether need to add condition loss in updating G2?
 discriminator_loss, generator_loss = [], []
 
-num_epochs = 20
 for epoch in range(num_epochs):
     batch_d_loss, batch_g_loss = [], []
     
@@ -81,9 +86,7 @@ for epoch in range(num_epochs):
         fake_label = torch.zeros(batch_size, 1).to(device)
         
         D1.zero_grad()
-        
-
-        
+               
         
         #################### Update D #############################
         # loss 1. real image + real condition -> 1
@@ -117,7 +120,6 @@ for epoch in range(num_epochs):
         S_tilde = G1.forward(dz,x_g_mS0)
 
         x_fake_S = S_tilde
-        # x_fake_S = Variable(S_tilde).to(device)
         mS_tilde = down_sample.get_segmented_image_7_s_tilde(batch_size, S_tilde)
         x_fake_mS = down_sample.get_downsampled_image_4_mS0(batch_size, mS_tilde)
         x_fake_mS = Variable(x_fake_mS).to(device,dtype=torch.float)
@@ -151,6 +153,9 @@ for epoch in range(num_epochs):
         # batch_d_loss.append((error_true/(error_true + error_fake + error_notmatch)).item())
         batch_d_loss.append((error_true + error_fake + error_notmatch).item())
         batch_g_loss.append(error_generator.item())
+
+        scheduler_gen.step()
+        scheduler_disc.step()
 
     discriminator_loss.append(np.mean(batch_d_loss))
     generator_loss.append(np.mean(batch_g_loss))
@@ -194,13 +199,19 @@ S_tilde_sample = S_tilde_sample.data.cpu().numpy()
 S_0_sample = X['train']['segmented_image'][0]
 
 S_tilde_sample =  S_tilde_sample.reshape(7,128,128)
-S_0_sample =S_0_sample.reshape(7,128,128)
-fig, ax = plt.subplots(nrows=7, ncols=2)#,figsize=(15,15))
-for row_index, row in enumerate(ax,0):
-    row[0].imshow(S_tilde_sample[row_index])
-    row[1].imshow(S_0_sample[row_index])
+S_0_sample =down_sample.get_segmented_image_7(S_0_sample)#.reshape(7,128,128)
 
-plt.show()
+
+for i in  range(len(S_tilde_sample)):
+    fig, ax = plt.subplots(nrows=1, ncols=2)
+    ax[0].imshow(S_tilde_sample[i])
+    ax[0].set_title("Generated")
+    ax[1].imshow(S_0_sample[i])
+    ax[1].set_title("Original")
+    plt.show()
+
+
+np.save('first_picture',S_tilde_sample)
 
 #######save_image#########
 
