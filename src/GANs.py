@@ -10,8 +10,6 @@ gausian_noise_size = 100
 
 design_encoding = human_attributes_size + encoded_description_size + gausian_noise_size # 218
 
-
-
 class Generator1(nn.Module):
     def __init__(self):
         super(Generator1,self).__init__()
