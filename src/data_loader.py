@@ -1,23 +1,4 @@
-
-
-import os.path
-import h5py
-import scipy.io
-import pickle
-import matplotlib.pyplot as plt
-import torch
-import numpy as np
-from skimage import color
-import copy
 from torch.utils.data import Dataset
-import down_sample
-
-language_original_path = os.path.join(os.path.dirname(__file__),'..','data','language_original.mat')
-indeces_path = os.path.join(os.path.dirname(__file__),'..','data','ind.mat')
-segmented_images_raw_path = os.path.join(os.path.dirname(__file__),'..','data','segmented_images.p')
-real_images_raw_path = os.path.join(os.path.dirname(__file__),'..','data','real_images.p')
-h5_file_path = os.path.join(os.path.dirname(__file__),'..','data','G2.h5')
-lang_encoding = os.path.join(os.path.dirname(__file__),'..','data','encode.npy')
 
 def binary_representaiton(val, n_bits):
     binary_str = bin(val)[2:]
@@ -65,7 +46,7 @@ class FashionData(Dataset):
         design_encoding = np.array(design_encoding)
 
         #return (self.X['segmented_image'][index],self.y[index])
-        return (design_encoding,self.X['down_sampled_images'][index],self.X['segmented_image'][index],self.y[index])        
+        return (design_encoding,self.X['down_sampled_images'][index],get_segmented_image_7(self.X['segmented_image'][index]),self.y[index])        
 
     def __len__(self):
         return len(self.y)
@@ -125,7 +106,7 @@ def construct_data(segmented_images,real_images,indeces,language,encoded_values)
         X['train']['description'].append(str(language['engJ'][idx][0][0]))
         X['train']['encoding'].append(encoded_values[idx])
         # X['train']['segmented_image'].append(segmented_images[idx])
-        X['train']['segmented_image'].append(down_sample.get_segmented_image_7(segmented_images[idx]))  
+        X['train']['segmented_image'].append(get_segmented_image_7(segmented_images[idx]))  
         X['train']['codeJ'].append(str(language['codeJ'][idx][0][0]))
         skin_tone = apply_mask(np.reshape(segmented_images[idx],(128,128)),real_images[idx])
 
@@ -135,8 +116,8 @@ def construct_data(segmented_images,real_images,indeces,language,encoded_values)
         X['train']['g'].append(g)
         X['train']['b'].append(b)
         X['train']['y'].append(0.2125*r + 0.7154*g +  0.0721*b)
-        #X['train']['down_sampled_images'].append(down_sample.get_downsampled_image(segmented_images[idx][0]))
-        X['train']['down_sampled_images'].append(down_sample.get_downsampled_image_4(segmented_images[idx]))
+        #X['train']['down_sampled_images'].append(get_downsampled_image(segmented_images[idx][0]))
+        X['train']['down_sampled_images'].append(get_downsampled_image_4(segmented_images[idx]))
         y['train'].append(real_images[idx])
 
     for i in range(length_to_iterate_test):
@@ -147,7 +128,7 @@ def construct_data(segmented_images,real_images,indeces,language,encoded_values)
         X['test']['cate_new'].append(language['cate_new'][idx][0])
         X['test']['description'].append(str(language['engJ'][idx][0][0]))
         X['test']['encoding'].append(encoded_values[idx])
-        X['test']['segmented_image'].append(down_sample.get_segmented_image_7(segmented_images[idx]))  
+        X['test']['segmented_image'].append(get_segmented_image_7(segmented_images[idx]))  
         # X['test']['segmented_image'].append(segmented_images[idx])
         X['test']['codeJ'].append(str(language['codeJ'][idx][0][0]))
         skin_tone = apply_mask(np.reshape(segmented_images[idx],(128,128)),real_images[idx])
@@ -159,7 +140,7 @@ def construct_data(segmented_images,real_images,indeces,language,encoded_values)
         X['test']['b'].append(b)
         X['test']['y'].append(0.2125*r + 0.7154*g +  0.0721*b)
 
-        X['test']['down_sampled_images'].append(down_sample.get_downsampled_image_4(segmented_images[idx]))
+        X['test']['down_sampled_images'].append(get_downsampled_image_4(segmented_images[idx]))
 
         y['test'].append(real_images[idx])
     
@@ -215,9 +196,8 @@ def load_data():
     (X,y) = construct_data(segmented_images,real_images,indeces,lang_org, encoded_values)
     print("Data constructed")
     print("Pickle the data")
-    handle = open(os.path.join(os.path.dirname(__file__),'..','data','debug_data.pkl'),'wb')
+    handle = open(os.path.join(os.path.dirname(__file__),'..','data','data.pkl'),'wb')
     pickle.dump((X,y), handle, protocol=pickle.HIGHEST_PROTOCOL)
     handle.close()
     
     return (X,y)
-

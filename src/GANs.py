@@ -1,14 +1,12 @@
-import torch
-import torch.nn as nn
-
-
 #sizes
 human_attributes_size = 18
 encoded_description_size = 100
 flatten_down_sampled_segmentations_size = 256
-gausian_noise_size = 100
+gausian_noise_size = 150
 
-design_encoding = human_attributes_size + encoded_description_size + gausian_noise_size # 218
+design_encoding = human_attributes_size + encoded_description_size + gausian_noise_size # 268
+
+
 
 class Generator1(nn.Module):
     def __init__(self):
@@ -87,7 +85,7 @@ class Generator2(nn.Module):
             nn.BatchNorm2d(64),
             nn.ReLU(),
             nn.ConvTranspose2d(in_channels=64, out_channels=3, kernel_size=4, stride=2, padding=1),
-            nn.Tanh(),
+            nn.Sigmoid(),
         )
         
     def forward(self, x_design_desc, s_tilde):
@@ -213,7 +211,3 @@ class Discriminator2(nn.Module):
         l7 = self.D2_Layer7(input_for_l7)
         return self.sigmoid(l7)
 
-
-
-
-        

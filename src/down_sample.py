@@ -1,13 +1,4 @@
-
-import matplotlib.pyplot as plt
-import numpy as np
-import torch
-import copy
-import os.path
-
-
-def get_segmented_image_7_s_tilde(batch_size,s_tilde):
-    
+def get_segmented_image_7_s_tilde(batch_size,s_tilde):    
     img_no_downsample = s_tilde
     #img_no_downsample_copy = copy.deepcopy(img_no_downsample)
     #Create a tensor 4D, one dimention for each label [0,3]
@@ -49,8 +40,9 @@ def get_segmented_image_7(seg_img):
         
     return img_7_lay_tensor
 
+
 def get_downsampled_image_4(img):
-    img_no_downsample = img
+    img_no_downsample = copy.deepcopy(img)
     img_no_downsample_copy = copy.deepcopy(img_no_downsample)
     # L´ : only use the first four lables. if label > 3, set label = 3
     img_no_downsample[img_no_downsample > 3] = 3
@@ -129,11 +121,3 @@ def get_segmented_image_1(batch_size,segimg_7):
         for j in range(7):
             seg_img_1[i]=seg_img_1[i]+j*seg_img_7[i][j]
     return seg_img_1
-#print('start downsampling')
-#img = next(iter(new_dict))
-#t_img = get_segmented_image(img)
-
-#dd = t_img[0][0]
-#plot_tensor_seg_image(t_img)
-
-#print('end downsampling')
