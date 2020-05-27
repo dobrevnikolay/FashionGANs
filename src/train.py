@@ -4,6 +4,8 @@ import os
 from torch.utils.data import DataLoader
 from torch.optim.lr_scheduler import LambdaLR
 
+running_on_colab = True
+
 ########### code of loading might need to be modified to run in local instead of colab ###################
 cuda = torch.cuda.is_available()
 device = torch.device("cuda:0" if cuda else "cpu")
@@ -13,14 +15,14 @@ loaded_data = None
 # if os.path.isfile(os.path.join(os.path.dirname(__file__),'..','data','debug_data_10k.pkl')):
 #     with open(os.path.join(os.path.dirname(__file__),'..','data','debug_data_10k.pkl'),'rb') as handle:
 
-if True:
+if running_on_colab:
     with open("/content/drive/My Drive/FashionData/debug_data_50k/debug_data_50k.pkl",'rb') as f:
         print("I pickle")
         loaded_data = pickle.load(f)
         # X,y = pickle.load(handle)
         X,y = loaded_data[0],loaded_data[1]
 else:
-    # X, y = load_data()
+    X, y = load_data()
     print("we don't have data in the drive")
 training_data = FashionData(X,y,'train')
 testing_data = FashionData(X,y,'test')
